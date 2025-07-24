@@ -105,6 +105,24 @@
           </p>
         </div>
 
+        <!-- 收藏状态 -->
+        <div>
+          <label class="flex items-center space-x-3 cursor-pointer">
+            <input
+              v-model="form.is_favorite"
+              type="checkbox"
+              class="w-5 h-5 text-pink-500 border-gray-300 rounded focus:ring-pink-500 focus:ring-offset-0"
+            />
+            <span class="text-sm font-medium text-gray-700 flex items-center">
+              <svg class="w-5 h-5 mr-2 text-pink-500" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
+              </svg>
+              收藏此联系人
+            </span>
+          </label>
+          <p class="mt-1 text-sm text-gray-500">收藏的联系人将显示在收藏列表中</p>
+        </div>
+
         <!-- 操作按钮 -->
         <div class="flex space-x-4 pt-4">
           <button
@@ -155,7 +173,8 @@ export default {
       name: '',
       phone: '',
       email: '',
-      address: ''
+      address: '',
+      is_favorite: false
     })
 
     const errors = reactive({
@@ -175,6 +194,7 @@ export default {
             form.phone = contact.phone || ''
             form.email = contact.email || ''
             form.address = contact.address || ''
+            form.is_favorite = contact.is_favorite || false
           }
         } catch (error) {
           console.error('Failed to load contact:', error)

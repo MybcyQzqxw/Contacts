@@ -20,9 +20,19 @@ api.interceptors.response.use(
 )
 
 export const contactsAPI = {
+  // 获取统计信息
+  getStats() {
+    return api.get('/contacts/stats')
+  },
+
   // 获取所有联系人
-  getAllContacts() {
-    return api.get('/contacts')
+  getAllContacts(params = {}) {
+    return api.get('/contacts', { params })
+  },
+  
+  // 获取收藏联系人
+  getFavoriteContacts(params = {}) {
+    return api.get('/contacts', { params: { ...params, favorites_only: true } })
   },
   
   // 获取单个联系人
@@ -38,6 +48,11 @@ export const contactsAPI = {
   // 更新联系人
   updateContact(id, contactData) {
     return api.put(`/contacts/${id}`, contactData)
+  },
+  
+  // 切换收藏状态
+  toggleFavorite(id) {
+    return api.patch(`/contacts/${id}/favorite`)
   },
   
   // 删除联系人
