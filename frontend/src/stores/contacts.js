@@ -121,8 +121,8 @@ export const useContactsStore = defineStore('contacts', {
           ? await contactsAPI.getFavoriteContacts()
           : await contactsAPI.getAllContacts()
         this.contacts = response.data
-        // 同时更新统计信息
-        await this.fetchStats()
+        // 同时更新统计信息，但不影响loading状态
+        this.fetchStats() // 不等待完成
       } catch (error) {
         this.error = '获取联系人失败'
         console.error('Fetch contacts error:', error)

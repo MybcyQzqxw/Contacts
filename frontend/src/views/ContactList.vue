@@ -415,18 +415,8 @@ export default {
       }
     }
 
-    onMounted(async () => {
-      console.log('ContactList mounted, 开始获取联系人数据')
-      try {
-        await contactsStore.fetchContacts()
-        console.log('联系人数据获取完成:', {
-          contacts: contactsStore.contacts.length,
-          loading: contactsStore.loading,
-          error: contactsStore.error
-        })
-      } catch (error) {
-        console.error('获取联系人数据失败:', error)
-      }
+    onMounted(() => {
+      contactsStore.fetchContacts()
     })
 
     return {
