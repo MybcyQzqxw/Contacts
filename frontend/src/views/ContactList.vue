@@ -61,7 +61,8 @@
       />
       <button
         @click="refreshLayout"
-        class="px-4 py-1 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors"
+        class="btn-secondary text-sm"
+        title="刷新布局"
       >
         刷新
       </button>
@@ -115,7 +116,7 @@
             <button
               @click="addEmailHistory(contact.id)"
               class="w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center transition-colors"
-              title="邮箱联系"
+              title="邮箱"
               :disabled="!contact.email"
               :class="{ 'opacity-50 cursor-not-allowed': !contact.email }"
             >
@@ -124,7 +125,7 @@
             
             <!-- 撤销按钮 -->
             <button
-              @click="undoLastCall(contact.id)"
+              @click="confirmUndo(contact.id)"
               class="w-8 h-8 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors"
               title="撤销"
               :disabled="!contact.contact_history || contact.contact_history.length === 0"
@@ -138,6 +139,7 @@
               @click="toggleFavorite(contact.id)"
               class="transition-colors hover:scale-110 transform"
               :class="contact.is_favorite ? 'text-pink-500' : 'text-gray-300 hover:text-pink-400'"
+              :title="contact.is_favorite ? '取消收藏' : '收藏'"
             >
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
@@ -160,19 +162,22 @@
         <div class="flex items-center space-x-2 pt-3 border-t border-gray-100 mt-auto">
           <button
             @click="showContactDetail(contact)"
-            class="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-sm py-2 px-3 rounded transition-colors"
+            class="flex-1 btn-primary text-sm py-2 px-3"
+            title="查看联系人详细信息"
           >
             详情
           </button>
           <router-link
             :to="`/edit/${contact.id}`"
             class="flex-1 btn-secondary text-sm text-center py-2"
+            title="编辑联系人信息"
           >
             编辑
           </router-link>
           <button
             @click="confirmDelete(contact)"
             class="flex-1 btn-danger text-sm py-2"
+            title="删除此联系人"
           >
             删除
           </button>
@@ -205,6 +210,30 @@
       :is-visible="showDetailModal"
       @close="closeDetailModal"
     />
+
+    <!-- 撤销确认对话框 -->
+    <div v-if="contactToUndo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">确认撤销</h3>
+        <p class="text-gray-600 mb-6">
+          确定要撤销最后一次联系记录吗？此操作无法恢复。
+        </p>
+        <div class="flex justify-end space-x-4">
+          <button
+            @click="contactToUndo = null"
+            class="btn-secondary"
+          >
+            取消
+          </button>
+          <button
+            @click="undoLastCall(contactToUndo)"
+            class="btn-danger"
+          >
+            确认撤销
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- 删除确认对话框 -->
     <div v-if="contactToDelete" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -248,6 +277,7 @@ export default {
     const contactsStore = useContactsStore()
     const searchQuery = ref('')
     const contactToDelete = ref(null)
+    const contactToUndo = ref(null)
     const contactsPerRow = ref(3) // 默认一行显示3个联系人
     const selectedContact = ref(null)
     const showDetailModal = ref(false)
@@ -322,9 +352,14 @@ export default {
         await contactsStore.undoLastCall(contactId)
         // 刷新统计数据
         await contactsStore.fetchStats()
+        contactToUndo.value = null
       } catch (error) {
         console.error('Failed to undo last call:', error)
       }
+    }
+
+    const confirmUndo = (contactId) => {
+      contactToUndo.value = contactId
     }
 
     const handleSearch = async () => {
@@ -358,6 +393,7 @@ export default {
       contactsStore,
       searchQuery,
       contactToDelete,
+      contactToUndo,
       contactsPerRow,
       selectedContact,
       showDetailModal,
@@ -371,6 +407,7 @@ export default {
       addCallHistory,
       addEmailHistory,
       undoLastCall,
+      confirmUndo,
       handleSearch,
       confirmDelete,
       deleteContact
