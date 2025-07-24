@@ -118,6 +118,9 @@ python main.py
 ### 4. 安装前端依赖（新开一个终端）
 
 ```bash
+# 激活环境
+conda activate contacts
+
 cd frontend
 npm install
 ```

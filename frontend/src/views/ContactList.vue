@@ -49,6 +49,24 @@
       </div>
     </div>
 
+    <!-- 布局控制 -->
+    <div class="flex items-center space-x-4 mb-6 p-4 bg-gray-50 rounded-lg">
+      <span class="text-sm font-medium text-gray-700">一行显示的联系人个数：</span>
+      <input
+        v-model.number="contactsPerRow"
+        type="number"
+        min="1"
+        max="6"
+        class="w-20 px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      />
+      <button
+        @click="refreshLayout"
+        class="px-4 py-1 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors"
+      >
+        刷新
+      </button>
+    </div>
+
     <!-- 加载状态 -->
     <div v-if="contactsStore.loading" class="flex justify-center py-8">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
@@ -66,51 +84,49 @@
     </div>
 
     <!-- 联系人列表 -->
-    <div v-else-if="contactsStore.contacts.length > 0" class="space-y-4">
+    <div v-else-if="contactsStore.contacts.length > 0" :class="gridCols">
       <div
         v-for="contact in contactsStore.contacts"
         :key="contact.id"
-        class="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6"
+        class="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-4"
       >
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-4">
-            <!-- 头像 -->
+        <div class="flex flex-col space-y-3">
+          <!-- 头像和收藏 -->
+          <div class="flex items-center justify-between">
             <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
               {{ contact.name.charAt(0).toUpperCase() }}
             </div>
-            
-            <!-- 联系人信息 -->
-            <div class="flex-1">
-              <div class="flex items-center space-x-2">
-                <h3 class="text-lg font-semibold text-gray-900">{{ contact.name }}</h3>
-                <!-- 收藏图标 -->
-                <button
-                  @click="toggleFavorite(contact.id)"
-                  class="transition-colors hover:scale-110 transform"
-                  :class="contact.is_favorite ? 'text-pink-500' : 'text-gray-300 hover:text-pink-400'"
-                >
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
-                  </svg>
-                </button>
-              </div>
-              <p class="text-gray-600 mt-1">📞 {{ contact.phone }}</p>
-              <p v-if="contact.email" class="text-gray-600">📧 {{ contact.email }}</p>
-              <p v-if="contact.address" class="text-gray-600">📍 {{ contact.address }}</p>
-            </div>
+            <!-- 收藏图标 -->
+            <button
+              @click="toggleFavorite(contact.id)"
+              class="transition-colors hover:scale-110 transform"
+              :class="contact.is_favorite ? 'text-pink-500' : 'text-gray-300 hover:text-pink-400'"
+            >
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
+              </svg>
+            </button>
+          </div>
+          
+          <!-- 联系人信息 -->
+          <div class="flex-1">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ contact.name }}</h3>
+            <p class="text-gray-600 text-sm mb-1">📞 {{ contact.phone }}</p>
+            <p v-if="contact.email" class="text-gray-600 text-sm mb-1">📧 {{ contact.email }}</p>
+            <p v-if="contact.address" class="text-gray-600 text-sm mb-1">📍 {{ contact.address }}</p>
           </div>
 
           <!-- 操作按钮 -->
-          <div class="flex items-center space-x-2">
+          <div class="flex items-center space-x-2 pt-2 border-t border-gray-100">
             <router-link
               :to="`/edit/${contact.id}`"
-              class="btn-secondary text-sm"
+              class="flex-1 btn-secondary text-sm text-center"
             >
               编辑
             </router-link>
             <button
               @click="confirmDelete(contact)"
-              class="btn-danger text-sm"
+              class="flex-1 btn-danger text-sm"
             >
               删除
             </button>
@@ -177,7 +193,20 @@ export default {
     const contactsStore = useContactsStore()
     const searchQuery = ref('')
     const contactToDelete = ref(null)
+    const contactsPerRow = ref(3) // 默认一行显示3个联系人
     const showFavoritesOnly = computed(() => contactsStore.showFavoritesOnly)
+
+    const gridCols = computed(() => {
+      const colsMap = {
+        1: 'grid gap-4 grid-cols-1',
+        2: 'grid gap-4 grid-cols-2',
+        3: 'grid gap-4 grid-cols-3',
+        4: 'grid gap-4 grid-cols-4',
+        5: 'grid gap-4 grid-cols-5',
+        6: 'grid gap-4 grid-cols-6'
+      }
+      return colsMap[contactsPerRow.value] || 'grid gap-4 grid-cols-3'
+    })
 
     const toggleFilter = async (favoritesOnly) => {
       await contactsStore.fetchContacts(favoritesOnly)
@@ -186,9 +215,18 @@ export default {
     const toggleFavorite = async (contactId) => {
       try {
         await contactsStore.toggleFavorite(contactId)
+        // 如果在收藏界面取消收藏，重新获取收藏列表以移除该联系人
+        if (showFavoritesOnly.value) {
+          await contactsStore.fetchContacts(true)
+        }
       } catch (error) {
         console.error('Failed to toggle favorite:', error)
       }
+    }
+
+    const refreshLayout = () => {
+      // 强制重新渲染，确保布局更新
+      contactsStore.fetchContacts(showFavoritesOnly.value)
     }
 
     const handleSearch = async () => {
@@ -222,9 +260,12 @@ export default {
       contactsStore,
       searchQuery,
       contactToDelete,
+      contactsPerRow,
       showFavoritesOnly,
+      gridCols,
       toggleFilter,
       toggleFavorite,
+      refreshLayout,
       handleSearch,
       confirmDelete,
       deleteContact
