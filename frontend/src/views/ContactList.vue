@@ -282,7 +282,8 @@ export default {
     const contactsPerRow = ref(4) // 默认一行显示4个联系人
     const selectedContact = ref(null)
     const showDetailModal = ref(false)
-    const showFavoritesOnly = computed(() => contactsStore.showFavoritesOnly)
+    // 本地状态管理收藏过滤，不依赖store状态
+    const showFavoritesOnly = ref(false)
 
     const gridCols = computed(() => {
       const colsMap = {
@@ -298,21 +299,42 @@ export default {
 
     // 获取排序后的联系人列表
     const displayedContacts = computed(() => {
-      return showFavoritesOnly.value 
+      const result = showFavoritesOnly.value 
         ? contactsStore.sortedFavoriteContacts 
         : contactsStore.sortedContacts
+      
+      console.log('displayedContacts 计算:', {
+        showFavoritesOnly: showFavoritesOnly.value,
+        allContacts: contactsStore.contacts.length,
+        favoriteContacts: contactsStore.sortedFavoriteContacts.length,
+        result: result.length,
+        loading: contactsStore.loading
+      })
+      
+      return result
     })
 
     const toggleFilter = async (favoritesOnly) => {
-      await contactsStore.fetchContacts(favoritesOnly)
+      console.log('toggleFilter 调用:', favoritesOnly)
+      showFavoritesOnly.value = favoritesOnly
+      // 确保有完整的联系人数据
+      if (contactsStore.contacts.length === 0 || contactsStore.loading) {
+        await contactsStore.fetchContacts()
+      }
+      console.log('toggleFilter 完成:', {
+        showFavoritesOnly: showFavoritesOnly.value,
+        contactsCount: contactsStore.contacts.length,
+        favoriteCount: contactsStore.sortedFavoriteContacts.length,
+        loading: contactsStore.loading
+      })
     }
 
     const toggleFavorite = async (contactId) => {
       try {
         await contactsStore.toggleFavorite(contactId)
-        // 如果在收藏界面取消收藏，重新获取收藏列表以移除该联系人
+        // 如果在收藏界面取消收藏，刷新显示
         if (showFavoritesOnly.value) {
-          await contactsStore.fetchContacts(true)
+          // 不需要重新请求，数据已经更新了
         }
       } catch (error) {
         console.error('Failed to toggle favorite:', error)
@@ -320,8 +342,10 @@ export default {
     }
 
     const refreshLayout = () => {
-      // 强制重新渲染，确保布局更新
-      contactsStore.fetchContacts(showFavoritesOnly.value)
+      // 强制重新渲染，确保布局更新  
+      if (contactsStore.contacts.length === 0) {
+        contactsStore.fetchContacts()
+      }
     }
 
     const showContactDetail = (contact) => {
@@ -396,7 +420,7 @@ export default {
       if (searchQuery.value.trim()) {
         await contactsStore.searchContacts(searchQuery.value)
       } else {
-        await contactsStore.fetchContacts(showFavoritesOnly.value)
+        await contactsStore.fetchContacts()
       }
     }
 
