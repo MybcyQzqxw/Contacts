@@ -103,7 +103,7 @@
           <!-- 操作按钮 -->
           <div class="flex items-center space-x-2">
             <router-link
-              :to="`/contacts/${contact.id}/edit`"
+              :to="`/edit/${contact.id}`"
               class="btn-secondary text-sm"
             >
               编辑
@@ -130,7 +130,7 @@
       </p>
       <router-link
         v-if="!showFavoritesOnly"
-        to="/contacts/new"
+        to="/add"
         class="btn-primary"
       >
         添加联系人

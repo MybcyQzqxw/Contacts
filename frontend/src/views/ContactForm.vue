@@ -253,7 +253,8 @@ export default {
           name: form.name.trim(),
           phone: form.phone.trim(),
           email: form.email.trim() || null,
-          address: form.address.trim() || null
+          address: form.address.trim() || null,
+          is_favorite: form.is_favorite
         }
 
         if (isEdit.value) {
