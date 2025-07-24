@@ -15,7 +15,7 @@ Contacts/
 └── docker-compose.yml # Docker 部署配置
 ```
 
-## 技术栈cd ../frontend
+## 技术栈
 
 
 - **前端**: Vue 3 + Vite + Tailwind CSS
@@ -78,6 +78,7 @@ python main.py
 
 ### 5. 启动前端开发服务器
 ```bash
+cd ../frontend
 npm run dev
 ```
 
