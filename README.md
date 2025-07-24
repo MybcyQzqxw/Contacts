@@ -54,7 +54,20 @@ Contacts/
 
 ## 快速启动
 
-### 🚀 一键启动（推荐）
+### � 系统要求
+
+#### 基础环境
+- Python 3.7+ 
+- Node.js 16+
+- npm 或 yarn
+
+#### Linux/Ubuntu 额外依赖
+```bash
+# 如果使用一键启动脚本，需要先安装
+sudo apt install python3-venv python3-pip
+```
+
+### �🚀 一键启动（推荐）
 
 #### Windows 系统
 ```bash
@@ -67,6 +80,9 @@ scripts/stop.bat
 
 #### Linux/macOS 系统
 ```bash
+# 先安装系统依赖（仅首次需要）
+sudo apt install python3-venv python3-pip
+
 # 给脚本执行权限
 chmod +x scripts/start.sh
 

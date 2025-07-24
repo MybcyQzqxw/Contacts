@@ -18,6 +18,14 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
+# 检查是否安装了 python3-venv
+if ! python3 -c "import venv" 2>/dev/null; then
+    echo "❌ 错误: 缺少 python3-venv 包"
+    echo "请手动安装: sudo apt install python3-venv python3-pip"
+    echo "或者使用开发者模式（conda环境）"
+    exit 1
+fi
+
 # 检查是否安装了 Node.js
 if ! command -v node &> /dev/null; then
     echo "❌ 错误: 未找到 Node.js，请先安装 Node.js 16+"
@@ -36,11 +44,20 @@ echo "✅ 环境检查通过"
 if [ ! -d "venv" ]; then
     echo "📦 创建Python虚拟环境..."
     python3 -m venv venv
+    if [ ! -d "venv" ]; then
+        echo "❌ 虚拟环境创建失败"
+        echo "可能需要安装: sudo apt install python3-venv"
+        exit 1
+    fi
 fi
 
 # 激活虚拟环境
 echo "🔄 激活Python虚拟环境..."
 source venv/bin/activate
+
+# 升级pip
+echo "📦 升级pip..."
+pip install --upgrade pip
 
 # 安装Python依赖
 echo "📦 安装Python依赖..."
