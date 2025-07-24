@@ -88,6 +88,7 @@ chmod +x scripts/start.sh
 
 ### 环境要求
 
+- conda
 - Node.js 16+
 - npm
 
