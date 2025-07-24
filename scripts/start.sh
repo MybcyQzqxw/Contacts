@@ -2,10 +2,15 @@
 
 # 通讯录项目启动脚本 (Linux/macOS)
 # 作者: AI Assistant
-# 功能: 自动安装依赖并启动前后端服务
+# 功能: 自动安装依赖并启动前后端服务（普通用户一键启动）
 
 echo "🚀 欢迎使用通讯录管理系统"
 echo "================================"
+
+# 获取脚本所在目录的上级目录（项目根目录）
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+cd "$PROJECT_DIR"
 
 # 检查是否安装了 Python
 if ! command -v python3 &> /dev/null; then
@@ -15,7 +20,7 @@ fi
 
 # 检查是否安装了 Node.js
 if ! command -v node &> /dev/null; then
-    echo "❌ 错误: 未找到 Node.js，请先安装 Node.js 14+"
+    echo "❌ 错误: 未找到 Node.js，请先安装 Node.js 16+"
     exit 1
 fi
 
@@ -50,7 +55,7 @@ cd ..
 # 启动后端服务（后台运行）
 echo "🚀 启动后端服务..."
 cd backend
-python main.py &
+python3 main.py &
 BACKEND_PID=$!
 cd ..
 
@@ -74,7 +79,22 @@ echo "📖 API文档: http://localhost:8000/docs"
 echo ""
 echo "按 Ctrl+C 停止所有服务"
 
+# 捕获中断信号并清理进程
+cleanup() {
+    echo ""
+    echo "🛑 正在停止服务..."
+    kill $BACKEND_PID 2>/dev/null
+    kill $FRONTEND_PID 2>/dev/null
+    echo "✅ 所有服务已停止"
+    exit 0
+}
+
+trap cleanup SIGINT SIGTERM
+
 # 等待用户中断
+while true; do
+    sleep 1
+done
 trap "echo '🛑 正在停止服务...'; kill $BACKEND_PID $FRONTEND_PID 2>/dev/null; exit 0" SIGINT
 
 # 保持脚本运行

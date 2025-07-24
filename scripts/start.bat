@@ -5,6 +5,9 @@ title 通讯录管理系统启动器
 echo 🚀 欢迎使用通讯录管理系统
 echo ================================
 
+REM 切换到项目根目录
+cd /d "%~dp0.."
+
 REM 检查是否安装了 Python
 python --version >nul 2>&1
 if errorlevel 1 (
@@ -16,7 +19,7 @@ if errorlevel 1 (
 REM 检查是否安装了 Node.js
 node --version >nul 2>&1
 if errorlevel 1 (
-    echo ❌ 错误: 未找到 Node.js，请先安装 Node.js 14+
+    echo ❌ 错误: 未找到 Node.js，请先安装 Node.js 16+
     pause
     exit /b 1
 )
@@ -48,7 +51,7 @@ pip install -r requirements.txt
 REM 安装前端依赖
 echo 📦 安装前端依赖...
 cd frontend
-call npm install
+npm install
 cd ..
 
 REM 启动后端服务（后台运行）
@@ -76,6 +79,7 @@ echo 📖 API文档: http://localhost:8000/docs
 echo.
 echo 按任意键关闭此窗口...
 echo 注意: 关闭此窗口不会停止服务
-echo 要停止服务，请在任务管理器中结束 Python 和 Node.js 进程
+echo 要停止服务，请运行 scripts\stop.bat 或在任务管理器中结束进程
+pause >nul
 
 pause >nul
