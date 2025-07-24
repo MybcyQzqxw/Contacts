@@ -50,7 +50,7 @@
         
         <div v-if="contact.contact_history && contact.contact_history.length > 0" class="space-y-3">
           <div
-            v-for="(history, displayIndex) in sortedHistoryWithOriginalIndex"
+            v-for="(history, displayIndex) in sortedHistory"
             :key="`${history.timestamp}-${history.action}`"
             :class="[
               'border rounded-lg p-3 flex items-center justify-between',
@@ -88,7 +88,7 @@
               
               <!-- 删除按钮 -->
               <button
-                @click="confirmDeleteHistory(history.originalIndex, history)"
+                @click="confirmDeleteHistory(history)"
                 class="w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors text-xs"
                 title="删除此条记录"
               >
@@ -159,7 +159,7 @@ export default {
       default: false
     }
   },
-  emits: ['close'],
+  emits: ['close', 'refresh-contact'],
   setup(props, { emit }) {
     const contactsStore = useContactsStore()
     const historyToDelete = ref(null)
@@ -176,24 +176,9 @@ export default {
       )
     })
 
-    // 带原始索引的排序历史记录
-    const sortedHistoryWithOriginalIndex = computed(() => {
-      if (!props.contact.contact_history) return []
-      
-      // 为每个历史记录添加原始索引
-      const historyWithIndex = props.contact.contact_history.map((history, index) => ({
-        ...history,
-        originalIndex: index
-      }))
-      
-      // 按时间倒序排列
-      return historyWithIndex.sort((a, b) => 
-        new Date(b.timestamp) - new Date(a.timestamp)
-      )
-    })
-
-    const confirmDeleteHistory = (originalIndex, historyData) => {
-      historyToDelete.value = originalIndex
+    const confirmDeleteHistory = (historyData) => {
+      // 使用timestamp和action的组合作为唯一标识
+      historyToDelete.value = historyData
       historyToDeleteData.value = historyData
     }
 
@@ -204,10 +189,34 @@ export default {
 
     const deleteHistoryRecord = async () => {
       try {
-        await contactsStore.deleteHistoryRecord(props.contact.id, historyToDelete.value)
+        if (!historyToDelete.value) return
+        
+        // 找到要删除记录在原始数组中的索引
+        const originalIndex = props.contact.contact_history.findIndex(h => 
+          h.timestamp === historyToDelete.value.timestamp && 
+          h.action === historyToDelete.value.action
+        )
+        
+        if (originalIndex === -1) {
+          console.error('找不到要删除的历史记录')
+          cancelDeleteHistory()
+          return
+        }
+        
+        console.log('删除历史记录，原始索引:', originalIndex, '记录:', historyToDelete.value)
+        
+        const result = await contactsStore.deleteHistoryRecord(props.contact.id, originalIndex)
+        console.log('删除结果:', result)
+        
+        // 清除删除状态
         cancelDeleteHistory()
+        
+        // 触发父组件刷新联系人数据
+        emit('refresh-contact', props.contact.id)
       } catch (error) {
         console.error('删除历史记录失败:', error)
+        // 即使失败也要清除删除状态
+        cancelDeleteHistory()
       }
     }
 
@@ -244,7 +253,6 @@ export default {
     return {
       closeModal,
       sortedHistory,
-      sortedHistoryWithOriginalIndex,
       historyToDelete,
       historyToDeleteData,
       confirmDeleteHistory,

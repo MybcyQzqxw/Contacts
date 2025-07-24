@@ -209,6 +209,7 @@
       :contact="selectedContact"
       :is-visible="showDetailModal"
       @close="closeDetailModal"
+      @refresh-contact="refreshContactData"
     />
 
     <!-- 撤销确认对话框 -->
@@ -333,6 +334,28 @@ export default {
       selectedContact.value = null
     }
 
+    const refreshContactData = async (contactId) => {
+      try {
+        console.log('刷新联系人数据:', contactId)
+        
+        // 重新获取联系人列表
+        await contactsStore.fetchContacts(showFavoritesOnly.value)
+        
+        // 更新当前显示的联系人详情
+        const updatedContact = contactsStore.getContactById(contactId)
+        if (updatedContact && selectedContact.value) {
+          selectedContact.value = updatedContact
+        }
+        
+        // 刷新统计数据
+        await contactsStore.fetchStats()
+        
+        console.log('联系人数据刷新完成')
+      } catch (error) {
+        console.error('刷新联系人数据失败:', error)
+      }
+    }
+
     const addCallHistory = async (contactId) => {
       try {
         await contactsStore.addCallHistory(contactId)
@@ -412,6 +435,7 @@ export default {
       refreshLayout,
       showContactDetail,
       closeDetailModal,
+      refreshContactData,
       addCallHistory,
       addEmailHistory,
       undoLastCall,
