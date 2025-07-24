@@ -88,49 +88,49 @@
       <div
         v-for="contact in contactsStore.contacts"
         :key="contact.id"
-        class="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-4"
+        class="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-4 flex flex-col h-full"
       >
-        <div class="flex flex-col space-y-3">
-          <!-- 头像和收藏 -->
-          <div class="flex items-center justify-between">
-            <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
-              {{ contact.name.charAt(0).toUpperCase() }}
-            </div>
-            <!-- 收藏图标 -->
-            <button
-              @click="toggleFavorite(contact.id)"
-              class="transition-colors hover:scale-110 transform"
-              :class="contact.is_favorite ? 'text-pink-500' : 'text-gray-300 hover:text-pink-400'"
-            >
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
-              </svg>
-            </button>
+        <!-- 头像和收藏 -->
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+            {{ contact.name.charAt(0).toUpperCase() }}
           </div>
-          
-          <!-- 联系人信息 -->
-          <div class="flex-1">
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ contact.name }}</h3>
-            <p class="text-gray-600 text-sm mb-1">📞 {{ contact.phone }}</p>
-            <p v-if="contact.email" class="text-gray-600 text-sm mb-1">📧 {{ contact.email }}</p>
-            <p v-if="contact.address" class="text-gray-600 text-sm mb-1">📍 {{ contact.address }}</p>
+          <!-- 收藏图标 -->
+          <button
+            @click="toggleFavorite(contact.id)"
+            class="transition-colors hover:scale-110 transform"
+            :class="contact.is_favorite ? 'text-pink-500' : 'text-gray-300 hover:text-pink-400'"
+          >
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- 联系人信息 - 使用 flex-grow 占据剩余空间 -->
+        <div class="flex-grow mb-3">
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ contact.name }}</h3>
+          <div class="space-y-1">
+            <p class="text-gray-600 text-sm">📞 {{ contact.phone }}</p>
+            <p v-if="contact.email" class="text-gray-600 text-sm">📧 {{ contact.email }}</p>
+            <p v-if="contact.address" class="text-gray-600 text-sm">📍 {{ contact.address }}</p>
           </div>
+        </div>
 
-          <!-- 操作按钮 -->
-          <div class="flex items-center space-x-2 pt-2 border-t border-gray-100">
-            <router-link
-              :to="`/edit/${contact.id}`"
-              class="flex-1 btn-secondary text-sm text-center"
-            >
-              编辑
-            </router-link>
-            <button
-              @click="confirmDelete(contact)"
-              class="flex-1 btn-danger text-sm"
-            >
-              删除
-            </button>
-          </div>
+        <!-- 操作按钮 - 始终在底部 -->
+        <div class="flex items-center space-x-2 pt-3 border-t border-gray-100 mt-auto">
+          <router-link
+            :to="`/edit/${contact.id}`"
+            class="flex-1 btn-secondary text-sm text-center"
+          >
+            编辑
+          </router-link>
+          <button
+            @click="confirmDelete(contact)"
+            class="flex-1 btn-danger text-sm"
+          >
+            删除
+          </button>
         </div>
       </div>
     </div>
