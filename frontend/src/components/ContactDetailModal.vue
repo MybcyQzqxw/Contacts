@@ -70,16 +70,28 @@
                 <p class="text-xs text-gray-600">{{ formatDateTime(history.timestamp) }}</p>
               </div>
             </div>
-            <span 
-              :class="[
-                'text-xs px-2 py-1 rounded',
-                history.action === '通话' 
-                  ? 'text-green-600 bg-green-100' 
-                  : 'text-blue-600 bg-blue-100'
-              ]"
-            >
-              {{ getTimeAgo(history.timestamp) }}
-            </span>
+            
+            <div class="flex items-center space-x-2">
+              <span 
+                :class="[
+                  'text-xs px-2 py-1 rounded',
+                  history.action === '通话' 
+                    ? 'text-green-600 bg-green-100' 
+                    : 'text-blue-600 bg-blue-100'
+                ]"
+              >
+                {{ getTimeAgo(history.timestamp) }}
+              </span>
+              
+              <!-- 删除按钮 -->
+              <button
+                @click="confirmDeleteHistory(index, history)"
+                class="w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors text-xs"
+                title="删除此条记录"
+              >
+                ×
+              </button>
+            </div>
           </div>
         </div>
         
@@ -99,11 +111,36 @@
         </button>
       </div>
     </div>
+
+    <!-- 删除历史记录确认对话框 -->
+    <div v-if="historyToDelete !== null" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-60">
+      <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">确认删除</h3>
+        <p class="text-gray-600 mb-6">
+          确定要删除这条{{ historyToDeleteData.action }}记录吗？此操作无法撤销。
+        </p>
+        <div class="flex justify-end space-x-4">
+          <button
+            @click="cancelDeleteHistory"
+            class="btn-secondary"
+          >
+            取消
+          </button>
+          <button
+            @click="deleteHistoryRecord"
+            class="btn-danger"
+          >
+            删除
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { useContactsStore } from '@/stores/contacts'
 
 export default {
   name: 'ContactDetailModal',
@@ -119,6 +156,10 @@ export default {
   },
   emits: ['close'],
   setup(props, { emit }) {
+    const contactsStore = useContactsStore()
+    const historyToDelete = ref(null)
+    const historyToDeleteData = ref(null)
+
     const closeModal = () => {
       emit('close')
     }
@@ -129,6 +170,29 @@ export default {
         new Date(b.timestamp) - new Date(a.timestamp)
       )
     })
+
+    const confirmDeleteHistory = (index, historyData) => {
+      // 需要找到原始索引（因为sortedHistory是排序后的）
+      const originalIndex = props.contact.contact_history.findIndex(h => 
+        h.timestamp === historyData.timestamp && h.action === historyData.action
+      )
+      historyToDelete.value = originalIndex
+      historyToDeleteData.value = historyData
+    }
+
+    const cancelDeleteHistory = () => {
+      historyToDelete.value = null
+      historyToDeleteData.value = null
+    }
+
+    const deleteHistoryRecord = async () => {
+      try {
+        await contactsStore.deleteHistoryRecord(props.contact.id, historyToDelete.value)
+        cancelDeleteHistory()
+      } catch (error) {
+        console.error('删除历史记录失败:', error)
+      }
+    }
 
     const formatDateTime = (timestamp) => {
       const date = new Date(timestamp)
@@ -163,6 +227,11 @@ export default {
     return {
       closeModal,
       sortedHistory,
+      historyToDelete,
+      historyToDeleteData,
+      confirmDeleteHistory,
+      cancelDeleteHistory,
+      deleteHistoryRecord,
       formatDateTime,
       getTimeAgo
     }

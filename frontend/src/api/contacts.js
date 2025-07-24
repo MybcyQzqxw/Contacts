@@ -78,6 +78,11 @@ export const contactsAPI = {
   // 撤销最后一次通话记录
   undoLastCall(id) {
     return api.delete(`/contacts/${id}/call`)
+  },
+
+  // 删除指定的历史记录
+  deleteHistoryRecord(id, historyIndex) {
+    return api.delete(`/contacts/${id}/history/${historyIndex}`)
   }
 }
 

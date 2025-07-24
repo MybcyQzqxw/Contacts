@@ -217,3 +217,37 @@ def undo_last_call(contact_id: int, db: Session = Depends(get_db)):
     db.refresh(contact)
     
     return {"message": "最后一次通话记录已撤销", "contact": contact}
+
+
+@router.delete("/contacts/{contact_id}/history/{history_index}")
+def delete_history_record(contact_id: int, history_index: int, db: Session = Depends(get_db)):
+    """删除指定索引的联系历史记录"""
+    from sqlalchemy.orm.attributes import flag_modified
+    
+    contact = db.query(Contact).filter(Contact.id == contact_id).first()
+    if not contact:
+        raise HTTPException(status_code=404, detail="联系人不存在")
+    
+    # 获取当前联系历史
+    history = contact.contact_history or []
+    
+    if not history:
+        raise HTTPException(status_code=400, detail="没有联系历史记录")
+    
+    if history_index < 0 or history_index >= len(history):
+        raise HTTPException(status_code=400, detail="历史记录索引无效")
+    
+    # 删除指定索引的记录
+    deleted_record = history.pop(history_index)
+    
+    # 更新数据库 - 需要标记为修改才能保存JSON字段
+    contact.contact_history = history
+    flag_modified(contact, "contact_history")
+    db.commit()
+    db.refresh(contact)
+    
+    return {
+        "message": f"已删除{deleted_record['action']}记录", 
+        "deleted_record": deleted_record,
+        "contact": contact
+    }

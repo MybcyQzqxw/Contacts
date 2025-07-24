@@ -85,9 +85,9 @@
     </div>
 
     <!-- 联系人列表 -->
-    <div v-else-if="contactsStore.contacts.length > 0" :class="gridCols">
+    <div v-else-if="displayedContacts.length > 0" :class="gridCols">
       <div
-        v-for="contact in contactsStore.contacts"
+        v-for="contact in displayedContacts"
         :key="contact.id"
         class="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-4 flex flex-col h-full"
       >
@@ -295,6 +295,13 @@ export default {
       return colsMap[contactsPerRow.value] || 'grid gap-4 grid-cols-3'
     })
 
+    // 获取排序后的联系人列表
+    const displayedContacts = computed(() => {
+      return showFavoritesOnly.value 
+        ? contactsStore.sortedFavoriteContacts 
+        : contactsStore.sortedContacts
+    })
+
     const toggleFilter = async (favoritesOnly) => {
       await contactsStore.fetchContacts(favoritesOnly)
     }
@@ -399,6 +406,7 @@ export default {
       showDetailModal,
       showFavoritesOnly,
       gridCols,
+      displayedContacts,
       toggleFilter,
       toggleFavorite,
       refreshLayout,
