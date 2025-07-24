@@ -279,7 +279,7 @@ export default {
     const searchQuery = ref('')
     const contactToDelete = ref(null)
     const contactToUndo = ref(null)
-    const contactsPerRow = ref(3) // 默认一行显示3个联系人
+    const contactsPerRow = ref(4) // 默认一行显示4个联系人
     const selectedContact = ref(null)
     const showDetailModal = ref(false)
     const showFavoritesOnly = computed(() => contactsStore.showFavoritesOnly)
@@ -293,7 +293,7 @@ export default {
         5: 'grid gap-4 grid-cols-5',
         6: 'grid gap-4 grid-cols-6'
       }
-      return colsMap[contactsPerRow.value] || 'grid gap-4 grid-cols-3'
+      return colsMap[contactsPerRow.value] || 'grid gap-4 grid-cols-4'
     })
 
     // 获取排序后的联系人列表

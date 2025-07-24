@@ -102,9 +102,8 @@ export const useContactsStore = defineStore('contacts', {
       this.error = null
       
       try {
-        const response = favoritesOnly 
-          ? await contactsAPI.getFavoriteContacts()
-          : await contactsAPI.getAllContacts()
+        // 始终获取全部联系人，然后在前端过滤
+        const response = await contactsAPI.getAllContacts()
         this.contacts = response.data
         this.showFavoritesOnly = favoritesOnly
         // 同时更新统计信息
