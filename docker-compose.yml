@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./database:/app/database
+    environment:
+      - PYTHONPATH=/app
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  db:
+    image: alpine:latest
+    volumes:
+      - ./database:/data
+    command: /bin/sh -c "mkdir -p /data && touch /data/contacts.db && tail -f /dev/null"
+    restart: unless-stopped
+
+volumes:
+  database_data:
