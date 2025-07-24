@@ -49,18 +49,35 @@
           <div
             v-for="(history, index) in sortedHistory"
             :key="index"
-            class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between"
+            :class="[
+              'border rounded-lg p-3 flex items-center justify-between',
+              history.action === '通话' 
+                ? 'bg-green-50 border-green-200' 
+                : 'bg-blue-50 border-blue-200'
+            ]"
           >
             <div class="flex items-center space-x-3">
-              <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">
-                📞
+              <div 
+                :class="[
+                  'w-8 h-8 rounded-full flex items-center justify-center text-white text-sm',
+                  history.action === '通话' ? 'bg-green-500' : 'bg-blue-500'
+                ]"
+              >
+                {{ history.action === '通话' ? '📞' : '📧' }}
               </div>
               <div>
                 <p class="text-sm font-medium text-gray-900">{{ history.action }}</p>
                 <p class="text-xs text-gray-600">{{ formatDateTime(history.timestamp) }}</p>
               </div>
             </div>
-            <span class="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
+            <span 
+              :class="[
+                'text-xs px-2 py-1 rounded',
+                history.action === '通话' 
+                  ? 'text-green-600 bg-green-100' 
+                  : 'text-blue-600 bg-blue-100'
+              ]"
+            >
               {{ getTimeAgo(history.timestamp) }}
             </span>
           </div>

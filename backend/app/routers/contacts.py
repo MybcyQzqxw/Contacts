@@ -159,6 +159,39 @@ def add_call_history(contact_id: int, db: Session = Depends(get_db)):
     return {"message": "通话记录已添加", "contact": contact}
 
 
+@router.post("/contacts/{contact_id}/email")
+def add_email_history(contact_id: int, db: Session = Depends(get_db)):
+    """记录邮箱联系历史"""
+    from datetime import datetime
+    from sqlalchemy.orm.attributes import flag_modified
+    
+    contact = db.query(Contact).filter(Contact.id == contact_id).first()
+    if not contact:
+        raise HTTPException(status_code=404, detail="联系人不存在")
+    
+    # 检查联系人是否有邮箱
+    if not contact.email:
+        raise HTTPException(status_code=400, detail="该联系人没有邮箱地址")
+    
+    # 获取当前联系历史
+    history = contact.contact_history or []
+    
+    # 添加新的邮箱联系记录
+    new_email = {
+        "timestamp": datetime.now().isoformat(),
+        "action": "邮箱"
+    }
+    history.append(new_email)
+    
+    # 更新数据库 - 需要标记为修改才能保存JSON字段
+    contact.contact_history = history
+    flag_modified(contact, "contact_history")
+    db.commit()
+    db.refresh(contact)
+    
+    return {"message": "邮箱联系记录已添加", "contact": contact}
+
+
 @router.delete("/contacts/{contact_id}/call")
 def undo_last_call(contact_id: int, db: Session = Depends(get_db)):
     """撤销最后一次通话记录"""

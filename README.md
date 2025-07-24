@@ -48,6 +48,9 @@ Contacts/
 - ✅ 搜索联系人
 - ✅ **收藏联系人** 🆕
 - ✅ **实时统计数据** 🆕
+- ✅ **联系历史记录** 🆕
+- ✅ **详情弹窗** 🆕
+- ✅ **布局控制** 🆕
 - ✅ 响应式设计
 - ✅ RESTful API
 - ✅ 数据验证
@@ -163,6 +166,9 @@ npm run dev
 | GET | `/api/contacts/{id}` | 获取指定联系人 | - |
 | PUT | `/api/contacts/{id}` | 更新联系人 | `{name?, phone?, email?, address?, is_favorite?}` |
 | PATCH | `/api/contacts/{id}/favorite` | 切换收藏状态 🆕 | - |
+| POST | `/api/contacts/{id}/call` | 记录通话历史 🆕 | - |
+| POST | `/api/contacts/{id}/email` | 记录邮箱联系历史 🆕 | - |
+| DELETE | `/api/contacts/{id}/call` | 撤销最后一次联系记录 🆕 | - |
 | DELETE | `/api/contacts/{id}` | 删除联系人 | - |
 | GET | `/api/contacts/search/{query}` | 搜索联系人 | - |
 
@@ -175,6 +181,7 @@ npm run dev
 - `email` (String): 邮箱，可选，最大100字符
 - `address` (String): 地址，可选，最大200字符
 - `is_favorite` (Boolean): 是否收藏，默认false 🆕
+- `contact_history` (JSON): 联系历史记录 🆕
 - `created_at` (DateTime): 创建时间，自动生成
 - `updated_at` (DateTime): 更新时间，自动更新
 

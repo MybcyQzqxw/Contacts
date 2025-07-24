@@ -92,7 +92,11 @@
       >
         <!-- 头像和操作按钮 -->
         <div class="flex items-center justify-between mb-3">
-          <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+          <div 
+            @click="showContactDetail(contact)"
+            class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg cursor-pointer hover:scale-105 transition-transform"
+            title="点击查看详情"
+          >
             {{ contact.name.charAt(0).toUpperCase() }}
           </div>
           
@@ -105,6 +109,17 @@
               title="通话"
             >
               📞
+            </button>
+            
+            <!-- 邮箱按钮 -->
+            <button
+              @click="addEmailHistory(contact.id)"
+              class="w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center transition-colors"
+              title="邮箱联系"
+              :disabled="!contact.email"
+              :class="{ 'opacity-50 cursor-not-allowed': !contact.email }"
+            >
+              📧
             </button>
             
             <!-- 撤销按钮 -->
@@ -291,6 +306,17 @@ export default {
       }
     }
 
+    const addEmailHistory = async (contactId) => {
+      try {
+        await contactsStore.addEmailHistory(contactId)
+        // 刷新统计数据
+        await contactsStore.fetchStats()
+      } catch (error) {
+        console.error('Failed to add email history:', error)
+        // 可以在这里显示错误提示，比如联系人没有邮箱
+      }
+    }
+
     const undoLastCall = async (contactId) => {
       try {
         await contactsStore.undoLastCall(contactId)
@@ -343,6 +369,7 @@ export default {
       showContactDetail,
       closeDetailModal,
       addCallHistory,
+      addEmailHistory,
       undoLastCall,
       handleSearch,
       confirmDelete,

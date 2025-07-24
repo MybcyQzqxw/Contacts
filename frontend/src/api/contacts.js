@@ -70,6 +70,11 @@ export const contactsAPI = {
     return api.post(`/contacts/${id}/call`)
   },
 
+  // 添加邮箱联系记录
+  addEmailHistory(id) {
+    return api.post(`/contacts/${id}/email`)
+  },
+
   // 撤销最后一次通话记录
   undoLastCall(id) {
     return api.delete(`/contacts/${id}/call`)

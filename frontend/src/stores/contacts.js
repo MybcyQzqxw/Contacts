@@ -197,6 +197,22 @@ export const useContactsStore = defineStore('contacts', {
       }
     },
 
+    async addEmailHistory(contactId) {
+      try {
+        const response = await contactsAPI.addEmailHistory(contactId)
+        // 更新本地联系人数据
+        const contactIndex = this.contacts.findIndex(c => c.id === contactId)
+        if (contactIndex !== -1) {
+          this.contacts[contactIndex] = response.data.contact
+        }
+        return response.data
+      } catch (error) {
+        this.error = '添加邮箱联系记录失败'
+        console.error('Add email history error:', error)
+        throw error
+      }
+    },
+
     async undoLastCall(contactId) {
       try {
         const response = await contactsAPI.undoLastCall(contactId)
