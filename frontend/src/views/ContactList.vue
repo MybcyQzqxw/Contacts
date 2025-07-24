@@ -14,7 +14,7 @@
             :class="[
               'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
               !contactsStore.showFavoritesOnly 
-                ? 'bg-blue-500 text-white' 
+                ? 'bg-pink-600 text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             ]"
           >
@@ -25,7 +25,7 @@
             :class="[
               'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
               contactsStore.showFavoritesOnly 
-                ? 'bg-pink-500 text-white' 
+                ? 'bg-pink-600 text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             ]"
           >
@@ -95,7 +95,7 @@
         <div class="flex items-center justify-between mb-3">
           <div 
             @click="showContactDetail(contact)"
-            class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg cursor-pointer hover:scale-105 transition-transform"
+            class="w-12 h-12 bg-pink-300 rounded-full flex items-center justify-center text-white font-bold text-lg cursor-pointer hover:scale-105 transition-transform"
             title="点击查看详情"
           >
             {{ contact.name.charAt(0).toUpperCase() }}
@@ -162,7 +162,7 @@
         <div class="flex items-center space-x-2 pt-3 border-t border-gray-100 mt-auto">
           <button
             @click="showContactDetail(contact)"
-            class="flex-1 btn-primary text-sm py-2 px-3"
+            class="flex-1 bg-pink-300 hover:bg-pink-400 text-white font-medium text-sm py-2 px-3 rounded-lg transition-colors duration-200"
             title="查看联系人详细信息"
           >
             详情
@@ -296,9 +296,22 @@ export default {
 
     // 获取排序后的联系人列表
     const displayedContacts = computed(() => {
-      return contactsStore.showFavoritesOnly 
-        ? contactsStore.sortedFavoriteContacts 
-        : contactsStore.sortedContacts
+      // 如果正在显示收藏联系人，直接使用sortedContacts（因为此时contacts已经是收藏联系人了）
+      // 如果显示全部联系人，也使用sortedContacts
+      // 只有当showFavoritesOnly为true但contacts包含所有联系人时，才需要过滤
+      if (contactsStore.showFavoritesOnly) {
+        // 检查当前contacts是否已经是过滤后的收藏联系人
+        const allAreFavorites = contactsStore.contacts.every(contact => contact.is_favorite)
+        if (allAreFavorites) {
+          // 如果所有联系人都是收藏的，说明API已经返回了过滤后的数据
+          return contactsStore.sortedContacts
+        } else {
+          // 否则需要前端过滤
+          return contactsStore.sortedFavoriteContacts
+        }
+      } else {
+        return contactsStore.sortedContacts
+      }
     })
 
     const toggleFilter = async (favoritesOnly) => {

@@ -18,7 +18,7 @@
         <div class="bg-gray-50 rounded-lg p-4">
           <div class="flex items-center space-x-4 mb-4">
             <!-- 头像 -->
-            <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-2xl">
+            <div class="w-16 h-16 bg-pink-300 rounded-full flex items-center justify-center text-white font-bold text-2xl">
               {{ contact.name.charAt(0).toUpperCase() }}
             </div>
             

@@ -77,7 +77,14 @@ export const useContactsStore = defineStore('contacts', {
 
     // 排序后的收藏联系人
     sortedFavoriteContacts: (state, getters) => {
-      return getters.sortedContacts.filter(contact => contact.is_favorite)
+      const result = getters.sortedContacts.filter(contact => contact.is_favorite)
+      console.log('🔍 sortedFavoriteContacts计算:', {
+        sortedContactsLength: getters.sortedContacts.length,
+        resultLength: result.length,
+        showFavoritesOnly: state.showFavoritesOnly,
+        allContactsLength: state.contacts.length
+      })
+      return result
     }
   },
 
