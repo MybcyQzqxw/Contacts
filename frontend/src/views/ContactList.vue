@@ -13,7 +13,7 @@
             @click="toggleFilter(false)"
             :class="[
               'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-              !showFavoritesOnly 
+              !contactsStore.showFavoritesOnly 
                 ? 'bg-blue-500 text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             ]"
@@ -24,7 +24,7 @@
             @click="toggleFilter(true)"
             :class="[
               'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-              showFavoritesOnly 
+              contactsStore.showFavoritesOnly 
                 ? 'bg-pink-500 text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             ]"
@@ -189,13 +189,13 @@
     <div v-else class="text-center py-12">
       <div class="text-gray-400 text-6xl mb-4">👥</div>
       <h3 class="text-lg font-medium text-gray-900 mb-2">
-        {{ showFavoritesOnly ? '暂无收藏的联系人' : '暂无联系人' }}
+        {{ contactsStore.showFavoritesOnly ? '暂无收藏的联系人' : '暂无联系人' }}
       </h3>
       <p class="text-gray-500 mb-4">
-        {{ showFavoritesOnly ? '你还没有收藏任何联系人' : '开始添加你的第一个联系人吧' }}
+        {{ contactsStore.showFavoritesOnly ? '你还没有收藏任何联系人' : '开始添加你的第一个联系人吧' }}
       </p>
       <router-link
-        v-if="!showFavoritesOnly"
+        v-if="!contactsStore.showFavoritesOnly"
         to="/add"
         class="btn-primary"
       >
@@ -282,9 +282,6 @@ export default {
     const contactsPerRow = ref(4) // 默认一行显示4个联系人
     const selectedContact = ref(null)
     const showDetailModal = ref(false)
-    // 本地状态管理收藏过滤，不依赖store状态
-    const showFavoritesOnly = ref(false)
-
     const gridCols = computed(() => {
       const colsMap = {
         1: 'grid gap-4 grid-cols-1',
@@ -299,42 +296,21 @@ export default {
 
     // 获取排序后的联系人列表
     const displayedContacts = computed(() => {
-      const result = showFavoritesOnly.value 
+      return contactsStore.showFavoritesOnly 
         ? contactsStore.sortedFavoriteContacts 
         : contactsStore.sortedContacts
-      
-      console.log('displayedContacts 计算:', {
-        showFavoritesOnly: showFavoritesOnly.value,
-        allContacts: contactsStore.contacts.length,
-        favoriteContacts: contactsStore.sortedFavoriteContacts.length,
-        result: result.length,
-        loading: contactsStore.loading
-      })
-      
-      return result
     })
 
     const toggleFilter = async (favoritesOnly) => {
-      console.log('toggleFilter 调用:', favoritesOnly)
-      showFavoritesOnly.value = favoritesOnly
-      // 确保有完整的联系人数据
-      if (contactsStore.contacts.length === 0 || contactsStore.loading) {
-        await contactsStore.fetchContacts()
-      }
-      console.log('toggleFilter 完成:', {
-        showFavoritesOnly: showFavoritesOnly.value,
-        contactsCount: contactsStore.contacts.length,
-        favoriteCount: contactsStore.sortedFavoriteContacts.length,
-        loading: contactsStore.loading
-      })
+      await contactsStore.fetchContacts(favoritesOnly)
     }
 
     const toggleFavorite = async (contactId) => {
       try {
         await contactsStore.toggleFavorite(contactId)
         // 如果在收藏界面取消收藏，刷新显示
-        if (showFavoritesOnly.value) {
-          // 不需要重新请求，数据已经更新了
+        if (contactsStore.showFavoritesOnly) {
+          await contactsStore.fetchContacts(true)
         }
       } catch (error) {
         console.error('Failed to toggle favorite:', error)
@@ -363,7 +339,7 @@ export default {
         console.log('刷新联系人数据:', contactId)
         
         // 重新获取联系人列表
-        await contactsStore.fetchContacts(showFavoritesOnly.value)
+        await contactsStore.fetchContacts(contactsStore.showFavoritesOnly)
         
         // 更新当前显示的联系人详情
         const updatedContact = contactsStore.getContactById(contactId)
@@ -420,7 +396,7 @@ export default {
       if (searchQuery.value.trim()) {
         await contactsStore.searchContacts(searchQuery.value)
       } else {
-        await contactsStore.fetchContacts()
+        await contactsStore.fetchContacts(contactsStore.showFavoritesOnly)
       }
     }
 
@@ -439,8 +415,18 @@ export default {
       }
     }
 
-    onMounted(() => {
-      contactsStore.fetchContacts()
+    onMounted(async () => {
+      console.log('ContactList mounted, 开始获取联系人数据')
+      try {
+        await contactsStore.fetchContacts()
+        console.log('联系人数据获取完成:', {
+          contacts: contactsStore.contacts.length,
+          loading: contactsStore.loading,
+          error: contactsStore.error
+        })
+      } catch (error) {
+        console.error('获取联系人数据失败:', error)
+      }
     })
 
     return {
@@ -451,7 +437,6 @@ export default {
       contactsPerRow,
       selectedContact,
       showDetailModal,
-      showFavoritesOnly,
       gridCols,
       displayedContacts,
       toggleFilter,
