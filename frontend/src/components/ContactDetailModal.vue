@@ -1,54 +1,57 @@
 <template>
   <div v-if="isVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-      <!-- 头部 -->
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-xl font-bold text-gray-900">联系人详情</h3>
-        <button
-          @click="closeModal"
-          class="text-gray-400 hover:text-gray-600 text-2xl"
-        >
-          ×
-        </button>
-      </div>
+    <div class="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col">
+      <!-- 固定头部区域 -->
+      <div class="flex-shrink-0 p-6 border-b border-gray-200">
+        <!-- 标题栏 -->
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-bold text-gray-900">联系人详情</h3>
+          <button
+            @click="closeModal"
+            class="text-gray-400 hover:text-gray-600 text-2xl"
+          >
+            ×
+          </button>
+        </div>
 
-      <!-- 联系人基本信息 -->
-      <div class="bg-gray-50 rounded-lg p-4 mb-6">
-        <div class="flex items-center space-x-4 mb-4">
-          <!-- 头像 -->
-          <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-2xl">
-            {{ contact.name.charAt(0).toUpperCase() }}
-          </div>
-          
-          <!-- 基本信息 -->
-          <div class="flex-1">
-            <div class="flex items-center space-x-2 mb-2">
-              <h4 class="text-xl font-semibold text-gray-900">{{ contact.name }}</h4>
-              <!-- 收藏状态 -->
-              <span v-if="contact.is_favorite" class="text-pink-500">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
-                </svg>
-              </span>
+        <!-- 联系人基本信息 -->
+        <div class="bg-gray-50 rounded-lg p-4">
+          <div class="flex items-center space-x-4 mb-4">
+            <!-- 头像 -->
+            <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-2xl">
+              {{ contact.name.charAt(0).toUpperCase() }}
             </div>
             
-            <div class="space-y-2">
-              <p class="text-gray-700"><span class="font-medium">电话：</span>{{ contact.phone }}</p>
-              <p v-if="contact.email" class="text-gray-700"><span class="font-medium">邮箱：</span>{{ contact.email }}</p>
-              <p v-if="contact.address" class="text-gray-700"><span class="font-medium">地址：</span>{{ contact.address }}</p>
+            <!-- 基本信息 -->
+            <div class="flex-1">
+              <div class="flex items-center space-x-2 mb-2">
+                <h4 class="text-xl font-semibold text-gray-900">{{ contact.name }}</h4>
+                <!-- 收藏状态 -->
+                <span v-if="contact.is_favorite" class="text-pink-500">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
+                  </svg>
+                </span>
+              </div>
+              
+              <div class="space-y-2">
+                <p class="text-gray-700"><span class="font-medium">电话：</span>{{ contact.phone }}</p>
+                <p v-if="contact.email" class="text-gray-700"><span class="font-medium">邮箱：</span>{{ contact.email }}</p>
+                <p v-if="contact.address" class="text-gray-700"><span class="font-medium">地址：</span>{{ contact.address }}</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 联系历史 -->
-      <div class="mb-6">
+      <!-- 可滚动的联系历史区域 -->
+      <div class="flex-1 overflow-y-auto p-6">
         <h5 class="text-lg font-semibold text-gray-900 mb-4">联系历史</h5>
         
         <div v-if="contact.contact_history && contact.contact_history.length > 0" class="space-y-3">
           <div
-            v-for="(history, index) in sortedHistory"
-            :key="index"
+            v-for="(history, displayIndex) in sortedHistoryWithOriginalIndex"
+            :key="`${history.timestamp}-${history.action}`"
             :class="[
               'border rounded-lg p-3 flex items-center justify-between',
               history.action === '通话' 
@@ -85,7 +88,7 @@
               
               <!-- 删除按钮 -->
               <button
-                @click="confirmDeleteHistory(index, history)"
+                @click="confirmDeleteHistory(history.originalIndex, history)"
                 class="w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors text-xs"
                 title="删除此条记录"
               >
@@ -101,14 +104,16 @@
         </div>
       </div>
 
-      <!-- 底部按钮 -->
-      <div class="flex justify-end">
-        <button
-          @click="closeModal"
-          class="btn-secondary"
-        >
-          关闭
-        </button>
+      <!-- 固定底部按钮 -->
+      <div class="flex-shrink-0 p-6 border-t border-gray-200">
+        <div class="flex justify-end">
+          <button
+            @click="closeModal"
+            class="btn-secondary"
+          >
+            关闭
+          </button>
+        </div>
       </div>
     </div>
 
@@ -171,11 +176,23 @@ export default {
       )
     })
 
-    const confirmDeleteHistory = (index, historyData) => {
-      // 需要找到原始索引（因为sortedHistory是排序后的）
-      const originalIndex = props.contact.contact_history.findIndex(h => 
-        h.timestamp === historyData.timestamp && h.action === historyData.action
+    // 带原始索引的排序历史记录
+    const sortedHistoryWithOriginalIndex = computed(() => {
+      if (!props.contact.contact_history) return []
+      
+      // 为每个历史记录添加原始索引
+      const historyWithIndex = props.contact.contact_history.map((history, index) => ({
+        ...history,
+        originalIndex: index
+      }))
+      
+      // 按时间倒序排列
+      return historyWithIndex.sort((a, b) => 
+        new Date(b.timestamp) - new Date(a.timestamp)
       )
+    })
+
+    const confirmDeleteHistory = (originalIndex, historyData) => {
       historyToDelete.value = originalIndex
       historyToDeleteData.value = historyData
     }
@@ -227,6 +244,7 @@ export default {
     return {
       closeModal,
       sortedHistory,
+      sortedHistoryWithOriginalIndex,
       historyToDelete,
       historyToDeleteData,
       confirmDeleteHistory,
