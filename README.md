@@ -51,41 +51,16 @@ Contacts/
 - ✅ 响应式设计
 - ✅ RESTful API
 - ✅ 数据验证
-- ✅ 错误处理
-- ✅ 跨域支持
 
-### 🆕 新增功能
+## 用户快速启动
 
-#### 📊 数据统计
-- 总联系人数（实时更新）
-- 收藏联系人数
-- 有邮箱联系人数
-- 有地址联系人数
-- 美观的渐变色卡片展示
+### 环境要求
 
-#### ⭐ 收藏功能
-- 一键收藏/取消收藏联系人
-- 筛选查看收藏联系人
-- 心形图标动画效果
-
-## 快速启动
-
-### � 系统要求
-
-#### 基础环境
-- Python 3.7+ 
 - Node.js 16+
-- npm 或 yarn
+- npm
 
-#### Linux/Ubuntu 额外依赖
-```bash
-# 如果使用一键启动脚本，需要先安装
-sudo apt install python3-venv python3-pip
-```
+### Windows 系统
 
-### �🚀 一键启动（推荐）
-
-#### Windows 系统
 ```bash
 # 双击运行或在命令行执行
 scripts/start.bat
@@ -94,7 +69,8 @@ scripts/start.bat
 scripts/stop.bat
 ```
 
-#### Linux/macOS 系统
+### Linux/macOS 系统
+
 ```bash
 # 先安装系统依赖（仅首次需要）
 sudo apt install python3-venv python3-pip
@@ -112,9 +88,8 @@ chmod +x scripts/start.sh
 
 ### 环境要求
 
-- Python 3.7+ 
 - Node.js 16+
-- npm 或 yarn
+- npm
 
 ### 1. 创建并激活 Conda 环境
 
@@ -129,25 +104,26 @@ conda activate contacts
 ### 2. 安装后端依赖
 
 ```bash
-# 安装 Python 依赖
 pip install -r requirements.txt
 ```
 
-### 3. 安装前端依赖
-```bash
-cd frontend
-npm install
-```
+### 3. 启动后端服务
 
-### 4. 启动后端服务（开发模式）
 ```bash
 cd backend
 python main.py
 ```
 
-### 5. 启动前端开发服务器
+### 4. 安装前端依赖（新开一个终端）
+
 ```bash
 cd frontend
+npm install
+```
+
+### 5. 启动前端开发服务器
+
+```bash
 npm run dev
 ```
 
@@ -200,17 +176,6 @@ npm run dev
 - `created_at` (DateTime): 创建时间，自动生成
 - `updated_at` (DateTime): 更新时间，自动更新
 
-### 统计数据模型 🆕
-
-```json
-{
-  "total_contacts": 0,
-  "favorite_contacts": 0,
-  "contacts_with_email": 0,
-  "contacts_with_address": 0
-}
-```
-
 ## 故障排除
 
 ### 常见问题
@@ -248,26 +213,6 @@ npm run dev
    - 检查 `database/` 目录是否存在
    - 确保有写入权限
    - 重启后端服务
-
-### 开发环境重置
-
-```bash
-# 停止所有服务
-scripts/stop.bat  # Windows
-# 或按 Ctrl+C    # Linux/macOS
-
-# 清理Python环境
-conda deactivate
-conda remove --name contacts --all -y
-
-# 清理前端依赖
-cd frontend
-rm -rf node_modules package-lock.json
-
-# 重新开始设置
-conda create --name contacts python=3.12 -y
-conda activate contacts
-```
 
 ## 许可证
 
