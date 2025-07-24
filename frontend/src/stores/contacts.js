@@ -83,6 +83,20 @@ export const useContactsStore = defineStore('contacts', {
 
   actions: {
     async fetchStats() {
+      // 不设置loading，避免与fetchContacts冲突
+      this.error = null
+      
+      try {
+        const response = await contactsAPI.getStats()
+        this.stats = response.data
+      } catch (error) {
+        this.error = '获取统计信息失败'
+        console.error('Fetch stats error:', error)
+      }
+    },
+
+    async fetchStatsOnly() {
+      // 单独获取统计信息时才设置loading
       this.loading = true
       this.error = null
       
