@@ -15,7 +15,8 @@ Contacts/
 └── docker-compose.yml # Docker 部署配置
 ```
 
-## 技术栈
+## 技术栈cd ../frontend
+
 
 - **前端**: Vue 3 + Vite + Tailwind CSS
 - **后端**: Python + FastAPI + SQLAlchemy
@@ -50,10 +51,11 @@ chmod +x scripts/start.sh
 
 ## 项目调试
 
-### 1. 创建虚拟环境
+### 1. 创建并激活虚拟环境
 
 ```bash
 conda create --name contacts python=3.12 -y
+conda activate contacts
 ```
 
 ### 2. 安装后端依赖
@@ -62,16 +64,16 @@ conda create --name contacts python=3.12 -y
 pip install -r requirements.txt
 ```
 
-### 3. 启动后端服务
-```bash
-cd backend
-python main.py
-```
-
-### 4. 安装前端依赖
+### 3. 安装前端依赖
 ```bash
 cd frontend
 npm install
+```
+
+### 4. 启动后端服务
+```bash
+cd ../backend
+python main.py
 ```
 
 ### 5. 启动前端开发服务器
