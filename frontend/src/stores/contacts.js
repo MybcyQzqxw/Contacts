@@ -179,6 +179,38 @@ export const useContactsStore = defineStore('contacts', {
 
     clearError() {
       this.error = null
+    },
+
+    async addCallHistory(contactId) {
+      try {
+        const response = await contactsAPI.addCallHistory(contactId)
+        // 更新本地联系人数据
+        const contactIndex = this.contacts.findIndex(c => c.id === contactId)
+        if (contactIndex !== -1) {
+          this.contacts[contactIndex] = response.data.contact
+        }
+        return response.data
+      } catch (error) {
+        this.error = '添加通话记录失败'
+        console.error('Add call history error:', error)
+        throw error
+      }
+    },
+
+    async undoLastCall(contactId) {
+      try {
+        const response = await contactsAPI.undoLastCall(contactId)
+        // 更新本地联系人数据
+        const contactIndex = this.contacts.findIndex(c => c.id === contactId)
+        if (contactIndex !== -1) {
+          this.contacts[contactIndex] = response.data.contact
+        }
+        return response.data
+      } catch (error) {
+        this.error = '撤销通话记录失败'
+        console.error('Undo call history error:', error)
+        throw error
+      }
     }
   }
 })

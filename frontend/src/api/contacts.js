@@ -63,6 +63,16 @@ export const contactsAPI = {
   // 搜索联系人
   searchContacts(query) {
     return api.get(`/contacts/search/${query}`)
+  },
+
+  // 添加通话记录
+  addCallHistory(id) {
+    return api.post(`/contacts/${id}/call`)
+  },
+
+  // 撤销最后一次通话记录
+  undoLastCall(id) {
+    return api.delete(`/contacts/${id}/call`)
   }
 }
 

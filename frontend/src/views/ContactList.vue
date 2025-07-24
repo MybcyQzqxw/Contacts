@@ -90,21 +90,45 @@
         :key="contact.id"
         class="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-4 flex flex-col h-full"
       >
-        <!-- 头像和收藏 -->
+        <!-- 头像和操作按钮 -->
         <div class="flex items-center justify-between mb-3">
           <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
             {{ contact.name.charAt(0).toUpperCase() }}
           </div>
-          <!-- 收藏图标 -->
-          <button
-            @click="toggleFavorite(contact.id)"
-            class="transition-colors hover:scale-110 transform"
-            :class="contact.is_favorite ? 'text-pink-500' : 'text-gray-300 hover:text-pink-400'"
-          >
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
-            </svg>
-          </button>
+          
+          <!-- 右侧按钮组 -->
+          <div class="flex items-center space-x-2">
+            <!-- 通话按钮 -->
+            <button
+              @click="addCallHistory(contact.id)"
+              class="w-8 h-8 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center transition-colors"
+              title="通话"
+            >
+              📞
+            </button>
+            
+            <!-- 撤销按钮 -->
+            <button
+              @click="undoLastCall(contact.id)"
+              class="w-8 h-8 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors"
+              title="撤销"
+              :disabled="!contact.contact_history || contact.contact_history.length === 0"
+              :class="{ 'opacity-50 cursor-not-allowed': !contact.contact_history || contact.contact_history.length === 0 }"
+            >
+              ↶
+            </button>
+            
+            <!-- 收藏图标 -->
+            <button
+              @click="toggleFavorite(contact.id)"
+              class="transition-colors hover:scale-110 transform"
+              :class="contact.is_favorite ? 'text-pink-500' : 'text-gray-300 hover:text-pink-400'"
+            >
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
+              </svg>
+            </button>
+          </div>
         </div>
         
         <!-- 联系人信息 - 使用 flex-grow 占据剩余空间 -->
@@ -119,15 +143,21 @@
 
         <!-- 操作按钮 - 始终在底部 -->
         <div class="flex items-center space-x-2 pt-3 border-t border-gray-100 mt-auto">
+          <button
+            @click="showContactDetail(contact)"
+            class="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-sm py-2 px-3 rounded transition-colors"
+          >
+            详情
+          </button>
           <router-link
             :to="`/edit/${contact.id}`"
-            class="flex-1 btn-secondary text-sm text-center"
+            class="flex-1 btn-secondary text-sm text-center py-2"
           >
             编辑
           </router-link>
           <button
             @click="confirmDelete(contact)"
-            class="flex-1 btn-danger text-sm"
+            class="flex-1 btn-danger text-sm py-2"
           >
             删除
           </button>
@@ -152,6 +182,14 @@
         添加联系人
       </router-link>
     </div>
+
+    <!-- 详情弹窗 -->
+    <ContactDetailModal
+      v-if="selectedContact"
+      :contact="selectedContact"
+      :is-visible="showDetailModal"
+      @close="closeDetailModal"
+    />
 
     <!-- 删除确认对话框 -->
     <div v-if="contactToDelete" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -183,17 +221,21 @@
 import { ref, computed, onMounted } from 'vue'
 import { useContactsStore } from '@/stores/contacts'
 import ContactStats from '@/components/ContactStats.vue'
+import ContactDetailModal from '@/components/ContactDetailModal.vue'
 
 export default {
   name: 'ContactList',
   components: {
-    ContactStats
+    ContactStats,
+    ContactDetailModal
   },
   setup() {
     const contactsStore = useContactsStore()
     const searchQuery = ref('')
     const contactToDelete = ref(null)
     const contactsPerRow = ref(3) // 默认一行显示3个联系人
+    const selectedContact = ref(null)
+    const showDetailModal = ref(false)
     const showFavoritesOnly = computed(() => contactsStore.showFavoritesOnly)
 
     const gridCols = computed(() => {
@@ -229,6 +271,36 @@ export default {
       contactsStore.fetchContacts(showFavoritesOnly.value)
     }
 
+    const showContactDetail = (contact) => {
+      selectedContact.value = contact
+      showDetailModal.value = true
+    }
+
+    const closeDetailModal = () => {
+      showDetailModal.value = false
+      selectedContact.value = null
+    }
+
+    const addCallHistory = async (contactId) => {
+      try {
+        await contactsStore.addCallHistory(contactId)
+        // 刷新统计数据
+        await contactsStore.fetchStats()
+      } catch (error) {
+        console.error('Failed to add call history:', error)
+      }
+    }
+
+    const undoLastCall = async (contactId) => {
+      try {
+        await contactsStore.undoLastCall(contactId)
+        // 刷新统计数据
+        await contactsStore.fetchStats()
+      } catch (error) {
+        console.error('Failed to undo last call:', error)
+      }
+    }
+
     const handleSearch = async () => {
       if (searchQuery.value.trim()) {
         await contactsStore.searchContacts(searchQuery.value)
@@ -261,11 +333,17 @@ export default {
       searchQuery,
       contactToDelete,
       contactsPerRow,
+      selectedContact,
+      showDetailModal,
       showFavoritesOnly,
       gridCols,
       toggleFilter,
       toggleFavorite,
       refreshLayout,
+      showContactDetail,
+      closeDetailModal,
+      addCallHistory,
+      undoLastCall,
       handleSearch,
       confirmDelete,
       deleteContact

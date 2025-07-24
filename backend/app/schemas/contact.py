@@ -1,6 +1,11 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
+
+
+class ContactHistory(BaseModel):
+    timestamp: datetime
+    action: str = "通话"
 
 
 class ContactBase(BaseModel):
@@ -12,7 +17,7 @@ class ContactBase(BaseModel):
 
 
 class ContactCreate(ContactBase):
-    pass
+    contact_history: Optional[List[ContactHistory]] = []
 
 
 class ContactUpdate(BaseModel):
@@ -21,10 +26,12 @@ class ContactUpdate(BaseModel):
     email: Optional[str] = None
     address: Optional[str] = None
     is_favorite: Optional[bool] = None
+    contact_history: Optional[List[ContactHistory]] = None
 
 
 class ContactResponse(ContactBase):
     id: int
+    contact_history: List[ContactHistory] = []
     created_at: datetime
     updated_at: Optional[datetime] = None
 

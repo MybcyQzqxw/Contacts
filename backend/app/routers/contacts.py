@@ -128,3 +128,59 @@ def search_contacts(query: str, db: Session = Depends(get_db)):
         )
     ).all()
     return contacts
+
+
+@router.post("/contacts/{contact_id}/call")
+def add_call_history(contact_id: int, db: Session = Depends(get_db)):
+    """记录通话历史"""
+    from datetime import datetime
+    from sqlalchemy.orm.attributes import flag_modified
+    
+    contact = db.query(Contact).filter(Contact.id == contact_id).first()
+    if not contact:
+        raise HTTPException(status_code=404, detail="联系人不存在")
+    
+    # 获取当前联系历史
+    history = contact.contact_history or []
+    
+    # 添加新的通话记录
+    new_call = {
+        "timestamp": datetime.now().isoformat(),
+        "action": "通话"
+    }
+    history.append(new_call)
+    
+    # 更新数据库 - 需要标记为修改才能保存JSON字段
+    contact.contact_history = history
+    flag_modified(contact, "contact_history")
+    db.commit()
+    db.refresh(contact)
+    
+    return {"message": "通话记录已添加", "contact": contact}
+
+
+@router.delete("/contacts/{contact_id}/call")
+def undo_last_call(contact_id: int, db: Session = Depends(get_db)):
+    """撤销最后一次通话记录"""
+    from sqlalchemy.orm.attributes import flag_modified
+    
+    contact = db.query(Contact).filter(Contact.id == contact_id).first()
+    if not contact:
+        raise HTTPException(status_code=404, detail="联系人不存在")
+    
+    # 获取当前联系历史
+    history = contact.contact_history or []
+    
+    if not history:
+        raise HTTPException(status_code=400, detail="没有可撤销的通话记录")
+    
+    # 删除最后一条记录
+    history.pop()
+    
+    # 更新数据库 - 需要标记为修改才能保存JSON字段
+    contact.contact_history = history
+    flag_modified(contact, "contact_history")
+    db.commit()
+    db.refresh(contact)
+    
+    return {"message": "最后一次通话记录已撤销", "contact": contact}
