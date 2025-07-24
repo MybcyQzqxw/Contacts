@@ -3,20 +3,24 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-# 确保database目录存在
-DATABASE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "database")
+# 确保database目录存在（项目根目录下）
+PROJECT_ROOT = os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.dirname(__file__))))
+DATABASE_DIR = os.path.join(PROJECT_ROOT, "database")
 os.makedirs(DATABASE_DIR, exist_ok=True)
 
 # SQLite数据库URL
-SQLALCHEMY_DATABASE_URL = f"sqlite:///{os.path.join(DATABASE_DIR, 'contacts.db')}"
+DB_PATH = os.path.join(DATABASE_DIR, 'contacts.db')
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, 
+    SQLALCHEMY_DATABASE_URL,
     connect_args={"check_same_thread": False}
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
 
 def get_db():
     db = SessionLocal()

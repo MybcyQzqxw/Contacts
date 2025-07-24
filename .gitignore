@@ -52,10 +52,21 @@ dist-ssr/
 .env.test.local
 .env.production.local
 
-# Database
-database/*.db
-database/*.sqlite
-database/*.sqlite3
+# Database (个人数据保护)
+database/
+*.db
+*.sqlite
+*.sqlite3
+
+# 用户上传文件
+uploads/
+media/
+attachments/
+
+# 个人配置文件
+config.local.*
+settings.local.*
+.env.personal
 
 # IDEs
 .vscode/
