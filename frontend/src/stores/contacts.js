@@ -13,7 +13,8 @@ export const useContactsStore = defineStore('contacts', {
     currentContact: null,
     loading: false,
     error: null,
-    showFavoritesOnly: false
+    showFavoritesOnly: false,
+    dashboardContactsCount: 3 // 仪表板显示的联系人数量，默认3个
   }),
 
   getters: {
@@ -29,15 +30,19 @@ export const useContactsStore = defineStore('contacts', {
 
     // 按姓氏首字母排序的联系人列表
     sortedContacts: (state) => {
-      return [...state.contacts].sort((a, b) => {
+      const sorted = [...state.contacts].sort((a, b) => {
         // 获取姓氏首字母（中文转拼音首字母或英文首字母）
         const getFirstLetter = (name) => {
-          const firstChar = name.charAt(0).toLowerCase()
-          // 如果是英文字母，直接返回
-          if (/[a-z]/.test(firstChar)) {
-            return firstChar
+          if (!name || name.length === 0) return 'z'
+
+          const firstChar = name.charAt(0)
+
+          // 如果是英文字母，直接返回小写
+          if (/[a-zA-Z]/.test(firstChar)) {
+            return firstChar.toLowerCase()
           }
-          // 如果是中文，使用简单的拼音映射
+
+          // 如果是中文，使用拼音映射
           const pinyinMap = {
             '安': 'a', '啊': 'a', '阿': 'a', '爱': 'a',
             '白': 'b', '包': 'b', '北': 'b', '本': 'b',
@@ -59,32 +64,36 @@ export const useContactsStore = defineStore('contacts', {
             '王': 'w', '吴': 'w', '武': 'w', '魏': 'w',
             '谢': 'x', '徐': 'x', '许': 'x', '夏': 'x',
             '杨': 'y', '姚': 'y', '叶': 'y', '于': 'y',
-            '张': 'z', '赵': 'z', '周': 'z', '朱': 'z'
+            '张': 'z', '赵': 'z', '周': 'z', '朱': 'z', '郑': 'z'
           }
-          return pinyinMap[firstChar] || firstChar
+
+          const mappedLetter = pinyinMap[firstChar]
+          if (mappedLetter) {
+            return mappedLetter
+          }
+
+          // 如果没有映射，返回字符本身的Unicode序号对应的字母（作为fallback）
+          return 'z'
         }
 
         const aFirst = getFirstLetter(a.name)
         const bFirst = getFirstLetter(b.name)
 
+        // 首先按首字母排序
         if (aFirst !== bFirst) {
           return aFirst.localeCompare(bFirst)
         }
+
         // 如果首字母相同，按完整姓名排序
-        return a.name.localeCompare(b.name)
+        return a.name.localeCompare(b.name, 'zh-CN', { numeric: true })
       })
+
+      return sorted
     },
 
     // 排序后的收藏联系人
     sortedFavoriteContacts: (state, getters) => {
-      const result = getters.sortedContacts.filter(contact => contact.is_favorite)
-      console.log('🔍 sortedFavoriteContacts计算:', {
-        sortedContactsLength: getters.sortedContacts.length,
-        resultLength: result.length,
-        showFavoritesOnly: state.showFavoritesOnly,
-        allContactsLength: state.contacts.length
-      })
-      return result
+      return getters.sortedContacts.filter(contact => contact.is_favorite)
     },
 
     // 最近联系的联系人（按最后一次联系时间排序，最近的在前）
@@ -100,7 +109,7 @@ export const useContactsStore = defineStore('contacts', {
           }
           return getLastContactTime(b) - getLastContactTime(a)
         })
-        .slice(0, 3) // 只取前三个
+        .slice(0, state.dashboardContactsCount) // 使用动态数量
     },
 
     // 最常联系的联系人（按联系次数排序，次数多的在前）
@@ -113,7 +122,7 @@ export const useContactsStore = defineStore('contacts', {
           }
           return getContactCount(b) - getContactCount(a)
         })
-        .slice(0, 3) // 只取前三个
+        .slice(0, state.dashboardContactsCount) // 使用动态数量
     }
   },
 
@@ -345,6 +354,28 @@ export const useContactsStore = defineStore('contacts', {
         this.error = '删除历史记录失败'
         console.error('Delete history record error:', error)
         throw error
+      }
+    },
+
+    // 设置仪表板显示的联系人数量
+    setDashboardContactsCount(count) {
+      // 验证输入值
+      const validCount = Math.max(1, Math.min(10, parseInt(count) || 3))
+      this.dashboardContactsCount = validCount
+
+      // 可以选择持久化到localStorage
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('dashboardContactsCount', validCount.toString())
+      }
+    },
+
+    // 从localStorage恢复设置
+    loadDashboardContactsCount() {
+      if (typeof localStorage !== 'undefined') {
+        const saved = localStorage.getItem('dashboardContactsCount')
+        if (saved) {
+          this.dashboardContactsCount = Math.max(1, Math.min(10, parseInt(saved) || 3))
+        }
       }
     }
   }

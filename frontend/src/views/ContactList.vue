@@ -3,6 +3,25 @@
     <!-- 统计信息 -->
     <ContactStats />
 
+    <!-- 仪表板控制面板 -->
+    <div class="flex items-center space-x-4 mb-6 p-4 bg-gray-50 rounded-lg">
+      <span class="text-sm font-medium text-gray-700">最近联系、最常联系统计人数：</span>
+      <input
+        v-model.number="dashboardCountInput"
+        type="number"
+        min="1"
+        max="10"
+        class="w-20 px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      />
+      <button
+        @click="updateDashboardCount"
+        class="btn-secondary text-sm"
+        title="手动刷新数量"
+      >
+        刷新
+      </button>
+    </div>
+
     <!-- 最近联系和最常联系板块 -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
       <!-- 最近联系板块 -->
@@ -314,7 +333,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useContactsStore } from '@/stores/contacts'
 import ContactStats from '@/components/ContactStats.vue'
 import ContactDetailModal from '@/components/ContactDetailModal.vue'
@@ -335,6 +354,7 @@ export default {
     const contactsPerRow = ref(4) // 默认一行显示4个联系人
     const selectedContact = ref(null)
     const showDetailModal = ref(false)
+    const dashboardCountInput = ref(3) // 仪表板联系人数量输入框
     const gridCols = computed(() => {
       const colsMap = {
         1: 'grid gap-4 grid-cols-1',
@@ -481,7 +501,26 @@ export default {
       }
     }
 
+    // 更新仪表板联系人数量
+    const updateDashboardCount = () => {
+      const count = dashboardCountInput.value || 3
+      const validCount = Math.max(1, Math.min(10, count))
+      dashboardCountInput.value = validCount
+      contactsStore.setDashboardContactsCount(validCount)
+    }
+
+    // 监听输入框变化，自动刷新
+    watch(dashboardCountInput, (newValue) => {
+      if (newValue && newValue >= 1 && newValue <= 10) {
+        contactsStore.setDashboardContactsCount(newValue)
+      }
+    })
+
     onMounted(() => {
+      // 恢复仪表板设置
+      contactsStore.loadDashboardContactsCount()
+      dashboardCountInput.value = contactsStore.dashboardContactsCount
+      
       contactsStore.fetchContacts()
     })
 
@@ -493,6 +532,7 @@ export default {
       contactsPerRow,
       selectedContact,
       showDetailModal,
+      dashboardCountInput,
       gridCols,
       displayedContacts,
       toggleFilter,
@@ -507,7 +547,8 @@ export default {
       confirmUndo,
       handleSearch,
       confirmDelete,
-      deleteContact
+      deleteContact,
+      updateDashboardCount
     }
   }
 }
