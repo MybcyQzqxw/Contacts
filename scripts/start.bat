@@ -1,96 +1,96 @@
 @echo off
-echo 通讯录管理系统启动器
+echo Contacts System Launcher
 echo ================================
 
-REM 进入项目根目录
+REM Go to project root
 cd /d "%~dp0.."
-echo 当前目录: %CD%
+echo Current directory: %CD%
 
-REM 检查环境
-echo 检查环境...
+REM Check environment
+echo Checking environment...
 python --version
 if errorlevel 1 (
-    echo 错误: 未找到Python，请先安装Python
+    echo Error: Python not found
     pause
     exit /b 1
 )
 
 node --version
 if errorlevel 1 (
-    echo 错误: 未找到Node.js，请先安装Node.js
+    echo Error: Node.js not found
     pause
     exit /b 1
 )
 
-REM 创建虚拟环境（如果不存在）
+REM Create virtual environment if not exists
 if not exist venv (
-    echo 创建虚拟环境...
+    echo Creating virtual environment...
     python -m venv venv
     if errorlevel 1 (
-        echo 创建虚拟环境失败
+        echo Failed to create virtual environment
         pause
         exit /b 1
     )
 )
 
-REM 激活虚拟环境
-echo 激活虚拟环境...
+REM Activate virtual environment
+echo Activating virtual environment...
 call venv\Scripts\activate.bat
 if errorlevel 1 (
-    echo 激活虚拟环境失败
+    echo Failed to activate virtual environment
     pause
     exit /b 1
 )
 
-REM 安装后端依赖
-echo 安装Python依赖...
+REM Install backend dependencies
+echo Installing Python dependencies...
 pip install -r requirements.txt
 if errorlevel 1 (
-    echo 安装Python依赖失败
+    echo Failed to install Python dependencies
     pause
     exit /b 1
 )
 
-REM 安装前端依赖
-echo 安装前端依赖...
+REM Install frontend dependencies
+echo Installing frontend dependencies...
 cd frontend
-npm install
-if errorlevel 1 (
-    echo 安装前端依赖失败
-    cd ..
-    pause
-    exit /b 1
-)
+npm install --no-audit --silent
+echo Frontend dependencies installed, errorlevel: %errorlevel%
 cd ..
+echo Back to project root: %CD%
 
-REM 启动后端服务
-echo 启动后端服务...
+REM Start backend service
+echo Starting backend service...
 cd backend
-start "后端服务" cmd /k "cd /d %CD% && call ..\venv\Scripts\activate.bat && python main.py"
+echo Current directory: %CD%
+start "Backend Service" cmd /k "cd /d %CD% && call ..\venv\Scripts\activate.bat && python main.py"
 cd ..
+echo Back to project root: %CD%
 
-REM 等待后端启动
-echo 等待后端启动...
+REM Wait for backend to start
+echo Waiting for backend to start...
 ping localhost -n 4 >nul
 
-REM 启动前端服务
-echo 启动前端服务...
+REM Start frontend service
+echo Starting frontend service...
 cd frontend
-start "前端服务" cmd /k "cd /d %CD% && npm run dev"
+echo Current directory: %CD%
+start "Frontend Service" cmd /k "cd /d %CD% && npm run dev"
 cd ..
+echo Back to project root: %CD%
 
 echo.
-echo 启动完成！
+echo Launch completed!
 echo ================================
-echo 前端地址: http://localhost:5173
-echo 后端API: http://localhost:8000
-echo API文档: http://localhost:8000/docs
+echo Frontend: http://localhost:5173
+echo Backend: http://localhost:8000
+echo API Docs: http://localhost:8000/docs
 echo.
-echo 提示:
-echo - 两个服务窗口已在后台启动
-echo - 关闭此窗口不会影响服务运行
-echo - 要停止服务，请运行 scripts\stop.bat
-echo - 或手动关闭 "后端服务" 和 "前端服务" 窗口
+echo Tips:
+echo - Two service windows have been started in background
+echo - Closing this window will not affect running services
+echo - To stop services, run scripts\stop.bat
+echo - Or manually close "Backend Service" and "Frontend Service" windows
 echo.
-echo 按任意键关闭此窗口...
+echo Press any key to close this window...
 pause >nul
