@@ -57,17 +57,17 @@ cd ..
 REM 启动后端服务（后台运行）
 echo 🚀 启动后端服务...
 cd backend
-start /B python main.py
+start "后端服务" cmd /c "call ..\venv\Scripts\activate.bat && python main.py"
 cd ..
 
 REM 等待后端启动
 echo ⏳ 等待后端服务启动...
-timeout /t 3 /nobreak >nul
+timeout /t 5 /nobreak >nul
 
 REM 启动前端服务
 echo 🚀 启动前端服务...
 cd frontend
-start /B npm run dev
+start "前端服务" cmd /c "npm run dev"
 cd ..
 
 echo.
@@ -77,9 +77,11 @@ echo 📱 前端地址: http://localhost:5173
 echo 🔧 后端API: http://localhost:8000
 echo 📖 API文档: http://localhost:8000/docs
 echo.
+echo 💡 提示:
+echo - 两个服务窗口已在后台启动
+echo - 关闭此窗口不会影响服务运行
+echo - 要停止服务，请运行 scripts\stop.bat
+echo - 或手动关闭 "后端服务" 和 "前端服务" 窗口
+echo.
 echo 按任意键关闭此窗口...
-echo 注意: 关闭此窗口不会停止服务
-echo 要停止服务，请运行 scripts\stop.bat 或在任务管理器中结束进程
-pause >nul
-
 pause >nul
