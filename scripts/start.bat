@@ -54,8 +54,39 @@ if errorlevel 1 (
 REM Install frontend dependencies
 echo Installing frontend dependencies...
 cd frontend
-npm install --no-audit --silent
-echo Frontend dependencies installed, errorlevel: %errorlevel%
+echo Current directory: %CD%
+
+REM Check if node_modules exists and has content
+if exist node_modules (
+    echo Node modules directory exists, checking if dependencies are complete...
+    if exist "node_modules\vue\package.json" (
+        echo Vue.js found in node_modules
+        echo Frontend dependencies appear to be already installed
+        goto :frontend_deps_done
+    )
+)
+
+echo Installing or updating frontend dependencies...
+echo Running: npm ci --silent
+npm ci --silent
+if errorlevel 1 (
+    echo npm ci failed, trying npm install...
+    echo Running: npm install --silent
+    npm install --silent
+    if errorlevel 1 (
+        echo npm install also failed, trying with network timeout...
+        npm install --silent --timeout=60000
+        if errorlevel 1 (
+            echo Failed to install frontend dependencies after multiple attempts
+            cd ..
+            pause
+            exit /b 1
+        )
+    )
+)
+
+:frontend_deps_done
+echo Frontend dependencies ready
 cd ..
 echo Back to project root: %CD%
 

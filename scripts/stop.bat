@@ -1,59 +1,59 @@
 @echo off
-echo 停止通讯录管理系统服务...
+echo Contacts System Stopper
 echo ================================
 
-REM 停止指定窗口标题的进程
-echo 停止后端服务...
-taskkill /fi "WindowTitle eq 后端服务*" /f /t 2>nul
+REM Stop processes by window title
+echo Stopping backend service...
+taskkill /fi "WindowTitle eq Backend Service*" /f /t 2>nul
 if %errorlevel% == 0 (
-    echo 后端服务窗口已关闭
+    echo Backend service window closed
 ) else (
-    echo 未找到后端服务窗口，尝试停止Python进程...
+    echo Backend service window not found, trying to stop Python processes...
     wmic process where "name='python.exe' and commandline like '%%main.py%%'" delete 2>nul
     if %errorlevel% == 0 (
-        echo 后端Python进程已停止
+        echo Backend Python process stopped
     ) else (
-        echo 未找到运行main.py的Python进程
+        echo No Python process running main.py found
     )
 )
 
-echo 停止前端服务...
-taskkill /fi "WindowTitle eq 前端服务*" /f /t 2>nul
+echo Stopping frontend service...
+taskkill /fi "WindowTitle eq Frontend Service*" /f /t 2>nul
 if %errorlevel% == 0 (
-    echo 前端服务窗口已关闭
+    echo Frontend service window closed
 ) else (
-    echo 未找到前端服务窗口，尝试停止Node.js进程...
+    echo Frontend service window not found, trying to stop Node.js processes...
     wmic process where "name='node.exe' and commandline like '%%vite%%'" delete 2>nul
     if %errorlevel% == 0 (
-        echo 前端Node.js进程已停止
+        echo Frontend Node.js process stopped
     ) else (
-        echo 未找到运行Vite的Node.js进程
+        echo No Node.js process running Vite found
     )
 )
 
-REM 清理端口占用
-echo 检查端口占用情况...
+REM Clean up port usage
+echo Checking port usage...
 
-REM 检查8000端口占用
+REM Check port 8000 usage
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8000.*LISTENING" 2^>nul') do (
-    echo 发现占用8000端口的进程: %%a
+    echo Found process occupying port 8000: %%a
     taskkill /f /pid %%a 2>nul
     if not errorlevel 1 (
-        echo 已停止占用8000端口的进程: %%a
+        echo Stopped process occupying port 8000: %%a
     )
 )
 
-REM 检查5173端口占用
+REM Check port 5173 usage
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":5173.*LISTENING" 2^>nul') do (
-    echo 发现占用5173端口的进程: %%a
+    echo Found process occupying port 5173: %%a
     taskkill /f /pid %%a 2>nul
     if not errorlevel 1 (
-        echo 已停止占用5173端口的进程: %%a
+        echo Stopped process occupying port 5173: %%a
     )
 )
 
 echo.
-echo 所有服务已停止
+echo All services stopped
 echo ================================
-echo 按任意键关闭此窗口...
+echo Press any key to close this window...
 pause >nul
