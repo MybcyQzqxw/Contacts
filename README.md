@@ -2,9 +2,9 @@
 
 一个功能完整的通讯录应用，支持联系人的增删改查操作。
 
-## 项目结构
+## 📁 项目结构
 
-```
+```bash
 Contacts/
 ├── .vscode/           # VS Code 配置文件
 ├── frontend/          # Vue3 + Tailwind CSS 前端
@@ -48,14 +48,14 @@ Contacts/
 └── docker-compose.yml # Docker 部署配置
 ```
 
-## 技术栈
+## 🛠️ 技术栈
 
 - **前端**: Vue 3 + Vite + Tailwind CSS + Pinia + Vue Router
 - **后端**: Python + FastAPI + SQLAlchemy + Uvicorn
 - **数据库**: SQLite
 - **开发工具**: Vite, ESLint, Prettier
 
-## 功能特性
+## ⭐ 功能特性
 
 - ✅ 添加联系人
 - ✅ 查看联系人
@@ -69,7 +69,7 @@ Contacts/
 - ✅ 响应式前端布局
 - ✅ RESTful API
 
-## 用户快速启动
+## 🚀 用户快速启动
 
 ### 环境要求
 
@@ -101,9 +101,9 @@ chmod +x scripts/start.sh
 # 停止服务：按 Ctrl+C
 ```
 
-## 开发者调试指南
+## 🔧 开发者调试指南
 
-### 环境要求
+### 0. 环境要求
 
 - conda
 - Node.js 16+
@@ -152,14 +152,14 @@ npm run dev
 
 后端服务启动时会自动创建数据库表，无需手动操作。
 
-## 访问地址
+## 🌐 访问地址
 
-- **前端应用**: http://localhost:5173
-- **后端API**: http://localhost:8000
-- **API文档**: http://localhost:8000/docs
-- **API交互**: http://localhost:8000/redoc
+- **前端应用**: <http://localhost:5173>
+- **后端API**: <http://localhost:8000>
+- **API文档**: <http://localhost:8000/docs>
+- **API交互**: <http://localhost:8000/redoc>
 
-## 项目特点
+## ✨ 项目特点
 
 - 🚀 **开箱即用**: 支持 Windows 和 Linux 系统一键启动
 - 📱 **响应式设计**: 适配桌面和移动设备
@@ -168,7 +168,7 @@ npm run dev
 - 🐳 **容器化**: 支持 Docker 部署
 - 🔒 **数据验证**: Pydantic 数据验证和序列化
 
-## API接口说明
+## 📚 API接口说明
 
 ### 联系人管理
 
@@ -190,6 +190,7 @@ npm run dev
 ### 数据模型
 
 **Contact 表结构**：
+
 - `id` (Integer): 主键，自动递增，建立索引
 - `name` (String, 100): 姓名，必填，最大100字符，建立索引
 - `phone` (String, 20): 电话号码，必填，最大20字符
@@ -201,6 +202,7 @@ npm run dev
 - `updated_at` (DateTime): 更新时间，自动更新，带时区
 
 **contact_history JSON 结构**：
+
 ```json
 [
   {
@@ -214,6 +216,6 @@ npm run dev
 ]
 ```
 
-## 许可证
+## 📄 许可证
 
 MIT License
