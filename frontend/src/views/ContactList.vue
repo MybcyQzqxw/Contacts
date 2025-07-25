@@ -3,6 +3,57 @@
     <!-- 统计信息 -->
     <ContactStats />
 
+    <!-- 最近联系和最常联系板块 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <!-- 最近联系板块 -->
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <span class="text-blue-500 mr-2">🕐</span>
+          最近联系
+        </h2>
+        <div v-if="contactsStore.recentlyContactedContacts.length > 0" class="space-y-3">
+          <CompactContactCard
+            v-for="contact in contactsStore.recentlyContactedContacts"
+            :key="`recent-${contact.id}`"
+            :contact="contact"
+            @show-detail="showContactDetail"
+            @toggle-favorite="toggleFavorite"
+            @add-call="addCallHistory"
+            @add-email="addEmailHistory"
+            @undo-call="confirmUndo"
+          />
+        </div>
+        <div v-else class="text-center py-8 text-gray-500">
+          <div class="text-4xl mb-2">📱</div>
+          <p class="text-sm">暂无联系记录</p>
+        </div>
+      </div>
+
+      <!-- 最常联系板块 -->
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <span class="text-green-500 mr-2">📊</span>
+          最常联系
+        </h2>
+        <div v-if="contactsStore.mostContactedContacts.length > 0" class="space-y-3">
+          <CompactContactCard
+            v-for="contact in contactsStore.mostContactedContacts"
+            :key="`frequent-${contact.id}`"
+            :contact="contact"
+            @show-detail="showContactDetail"
+            @toggle-favorite="toggleFavorite"
+            @add-call="addCallHistory"
+            @add-email="addEmailHistory"
+            @undo-call="confirmUndo"
+          />
+        </div>
+        <div v-else class="text-center py-8 text-gray-500">
+          <div class="text-4xl mb-2">📈</div>
+          <p class="text-sm">暂无联系记录</p>
+        </div>
+      </div>
+    </div>
+
     <!-- 页面标题和操作 -->
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-gray-900">联系人列表</h1>
@@ -267,12 +318,14 @@ import { ref, computed, onMounted } from 'vue'
 import { useContactsStore } from '@/stores/contacts'
 import ContactStats from '@/components/ContactStats.vue'
 import ContactDetailModal from '@/components/ContactDetailModal.vue'
+import CompactContactCard from '@/components/CompactContactCard.vue'
 
 export default {
   name: 'ContactList',
   components: {
     ContactStats,
-    ContactDetailModal
+    ContactDetailModal,
+    CompactContactCard
   },
   setup() {
     const contactsStore = useContactsStore()

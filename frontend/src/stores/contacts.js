@@ -20,9 +20,9 @@ export const useContactsStore = defineStore('contacts', {
     getContactById: (state) => (id) => {
       return state.contacts.find(contact => contact.id === parseInt(id))
     },
-    
+
     contactsCount: (state) => state.contacts.length,
-    
+
     favoriteContacts: (state) => {
       return state.contacts.filter(contact => contact.is_favorite)
     },
@@ -66,7 +66,7 @@ export const useContactsStore = defineStore('contacts', {
 
         const aFirst = getFirstLetter(a.name)
         const bFirst = getFirstLetter(b.name)
-        
+
         if (aFirst !== bFirst) {
           return aFirst.localeCompare(bFirst)
         }
@@ -85,6 +85,35 @@ export const useContactsStore = defineStore('contacts', {
         allContactsLength: state.contacts.length
       })
       return result
+    },
+
+    // 最近联系的联系人（按最后一次联系时间排序，最近的在前）
+    recentlyContactedContacts: (state) => {
+      return [...state.contacts]
+        .filter(contact => contact.contact_history && Array.isArray(contact.contact_history) && contact.contact_history.length > 0)
+        .sort((a, b) => {
+          // 获取最后一次联系时间
+          const getLastContactTime = (contact) => {
+            if (!contact.contact_history || contact.contact_history.length === 0) return 0
+            const lastContact = contact.contact_history[contact.contact_history.length - 1]
+            return new Date(lastContact.timestamp).getTime()
+          }
+          return getLastContactTime(b) - getLastContactTime(a)
+        })
+        .slice(0, 3) // 只取前三个
+    },
+
+    // 最常联系的联系人（按联系次数排序，次数多的在前）
+    mostContactedContacts: (state) => {
+      return [...state.contacts]
+        .filter(contact => contact.contact_history && Array.isArray(contact.contact_history) && contact.contact_history.length > 0)
+        .sort((a, b) => {
+          const getContactCount = (contact) => {
+            return contact.contact_history ? contact.contact_history.length : 0
+          }
+          return getContactCount(b) - getContactCount(a)
+        })
+        .slice(0, 3) // 只取前三个
     }
   },
 
@@ -92,7 +121,7 @@ export const useContactsStore = defineStore('contacts', {
     async fetchStats() {
       // 不设置loading，避免与fetchContacts冲突
       this.error = null
-      
+
       try {
         const response = await contactsAPI.getStats()
         this.stats = response.data
@@ -106,7 +135,7 @@ export const useContactsStore = defineStore('contacts', {
       // 单独获取统计信息时才设置loading
       this.loading = true
       this.error = null
-      
+
       try {
         const response = await contactsAPI.getStats()
         this.stats = response.data
@@ -122,9 +151,9 @@ export const useContactsStore = defineStore('contacts', {
       this.loading = true
       this.error = null
       this.showFavoritesOnly = favoritesOnly
-      
+
       try {
-        const response = favoritesOnly 
+        const response = favoritesOnly
           ? await contactsAPI.getFavoriteContacts()
           : await contactsAPI.getAllContacts()
         this.contacts = response.data
@@ -141,7 +170,7 @@ export const useContactsStore = defineStore('contacts', {
     async fetchContact(id) {
       this.loading = true
       this.error = null
-      
+
       try {
         const response = await contactsAPI.getContact(id)
         this.currentContact = response.data
@@ -157,7 +186,7 @@ export const useContactsStore = defineStore('contacts', {
     async createContact(contactData) {
       this.loading = true
       this.error = null
-      
+
       try {
         const response = await contactsAPI.createContact(contactData)
         this.contacts.push(response.data)
@@ -175,7 +204,7 @@ export const useContactsStore = defineStore('contacts', {
     async updateContact(id, contactData) {
       this.loading = true
       this.error = null
-      
+
       try {
         const response = await contactsAPI.updateContact(id, contactData)
         const index = this.contacts.findIndex(contact => contact.id === id)
@@ -196,7 +225,7 @@ export const useContactsStore = defineStore('contacts', {
     async toggleFavorite(id) {
       this.loading = true
       this.error = null
-      
+
       try {
         const response = await contactsAPI.toggleFavorite(id)
         const index = this.contacts.findIndex(contact => contact.id === id)
@@ -217,7 +246,7 @@ export const useContactsStore = defineStore('contacts', {
     async deleteContact(id) {
       this.loading = true
       this.error = null
-      
+
       try {
         await contactsAPI.deleteContact(id)
         this.contacts = this.contacts.filter(contact => contact.id !== id)
@@ -236,10 +265,10 @@ export const useContactsStore = defineStore('contacts', {
         await this.fetchContacts()
         return
       }
-      
+
       this.loading = true
       this.error = null
-      
+
       try {
         const response = await contactsAPI.searchContacts(query)
         this.contacts = response.data
