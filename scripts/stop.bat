@@ -12,11 +12,12 @@ if %errorlevel% == 0 (
     echo ✅ 后端服务窗口已关闭
 ) else (
     echo ℹ️ 未找到运行的后端服务窗口，尝试停止Python进程...
-    taskkill /f /im python.exe 2>nul
+    REM 更精确地停止Python进程（只停止运行main.py的进程）
+    wmic process where "name='python.exe' and commandline like '%%main.py%%'" delete 2>nul
     if %errorlevel% == 0 (
-        echo ✅ Python进程已停止
+        echo ✅ 后端Python进程已停止
     ) else (
-        echo ℹ️ 未找到运行的Python进程
+        echo ℹ️ 未找到运行main.py的Python进程
     )
 )
 
@@ -26,28 +27,41 @@ if %errorlevel% == 0 (
     echo ✅ 前端服务窗口已关闭
 ) else (
     echo ℹ️ 未找到运行的前端服务窗口，尝试停止Node.js进程...
-    taskkill /f /im node.exe 2>nul
+    REM 更精确地停止Node.js进程（只停止Vite开发服务器）
+    wmic process where "name='node.exe' and commandline like '%%vite%%'" delete 2>nul
     if %errorlevel% == 0 (
-        echo ✅ Node.js进程已停止
+        echo ✅ 前端Node.js进程已停止
     ) else (
-        echo ℹ️ 未找到运行的Node.js进程
+        echo ℹ️ 未找到运行Vite的Node.js进程
     )
 )
 
 REM 额外清理：停止可能残留的端口占用
 echo 🔄 检查端口占用情况...
-for /f "tokens=5" %%a in ('netstat -aon ^| find ":8000" ^| find "LISTENING"') do (
-    echo 停止占用8000端口的进程: %%a
+
+REM 检查8000端口占用
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8000.*LISTENING" 2^>nul') do (
+    echo 发现占用8000端口的进程: %%a
     taskkill /f /pid %%a 2>nul
+    if not errorlevel 1 (
+        echo ✅ 已停止占用8000端口的进程: %%a
+    )
 )
 
-for /f "tokens=5" %%a in ('netstat -aon ^| find ":5173" ^| find "LISTENING"') do (
-    echo 停止占用5173端口的进程: %%a
+REM 检查5173端口占用
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":5173.*LISTENING" 2^>nul') do (
+    echo 发现占用5173端口的进程: %%a
     taskkill /f /pid %%a 2>nul
+    if not errorlevel 1 (
+        echo ✅ 已停止占用5173端口的进程: %%a
+    )
 )
 
 echo.
 echo ✅ 所有服务已停止
+echo ================================
+echo 按任意键关闭此窗口...
+pause >nul
 echo ================================
 echo 按任意键关闭此窗口...
 pause >nul
